@@ -31,6 +31,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>?action=bookings">Đặt Tour</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= BASE_URL ?>?action=guides">Quản lý HDV</a>
+                </li>
             </ul>
         </div>
     </nav>

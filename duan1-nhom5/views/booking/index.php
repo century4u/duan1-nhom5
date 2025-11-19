@@ -34,10 +34,14 @@
                         <label class="form-label">Trạng thái</label>
                         <select class="form-select" name="status">
                             <option value="">Tất cả</option>
-                            <option value="pending" <?= (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'selected' : '' ?>>Chờ xác nhận</option>
-                            <option value="confirmed" <?= (isset($_GET['status']) && $_GET['status'] === 'confirmed') ? 'selected' : '' ?>>Đã xác nhận</option>
-                            <option value="cancelled" <?= (isset($_GET['status']) && $_GET['status'] === 'cancelled') ? 'selected' : '' ?>>Đã hủy</option>
-                            <option value="completed" <?= (isset($_GET['status']) && $_GET['status'] === 'completed') ? 'selected' : '' ?>>Hoàn thành</option>
+                            <?php 
+                            $statuses = BookingModel::getStatuses();
+                            foreach ($statuses as $statusKey => $statusLabel): 
+                            ?>
+                                <option value="<?= $statusKey ?>" <?= (isset($_GET['status']) && $_GET['status'] === $statusKey) ? 'selected' : '' ?>>
+                                    <?= $statusLabel ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -96,15 +100,18 @@
                                     <td><strong><?= number_format($booking['total_price'], 0, ',', '.') ?> đ</strong></td>
                                     <td>
                                         <?php
-                                        $statusLabels = [
-                                            'pending' => ['label' => 'Chờ xác nhận', 'class' => 'warning'],
-                                            'confirmed' => ['label' => 'Đã xác nhận', 'class' => 'success'],
-                                            'cancelled' => ['label' => 'Đã hủy', 'class' => 'danger'],
-                                            'completed' => ['label' => 'Hoàn thành', 'class' => 'info']
+                                        $statusLabels = BookingModel::getStatuses();
+                                        $statusColors = [
+                                            'pending' => 'warning',
+                                            'deposit' => 'info',
+                                            'confirmed' => 'success',
+                                            'completed' => 'primary',
+                                            'cancelled' => 'danger'
                                         ];
-                                        $status = $statusLabels[$booking['status']] ?? ['label' => $booking['status'], 'class' => 'secondary'];
+                                        $statusLabel = $statusLabels[$booking['status']] ?? $booking['status'];
+                                        $statusColor = $statusColors[$booking['status']] ?? 'secondary';
                                         ?>
-                                        <span class="badge bg-<?= $status['class'] ?>"><?= $status['label'] ?></span>
+                                        <span class="badge bg-<?= $statusColor ?>"><?= $statusLabel ?></span>
                                     </td>
                                     <td>
                                         <a href="<?= BASE_URL ?>?action=bookings/show&id=<?= $booking['id'] ?>" 

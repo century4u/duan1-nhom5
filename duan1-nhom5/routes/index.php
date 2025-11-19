@@ -23,9 +23,19 @@ match ($action) {
     'bookings/create'      => (new BookingController)->create(),
     'bookings/store'       => (new BookingController)->store(),
     'bookings/show'        => (new BookingController)->show(),
+    'bookings/update-status' => (new BookingController)->updateStatus(),
     'bookings/edit'        => (new BookingController)->edit(),
     'bookings/update'      => (new BookingController)->update(),
     'bookings/delete'      => (new BookingController)->delete(),
+    
+    // Guide management routes (HDV)
+    'guides'             => (new GuideController)->index(),
+    'guides/create'      => (new GuideController)->create(),
+    'guides/store'       => (new GuideController)->store(),
+    'guides/show'        => (new GuideController)->show(),
+    'guides/edit'        => (new GuideController)->edit(),
+    'guides/update'      => (new GuideController)->update(),
+    'guides/delete'      => (new GuideController)->delete(),
     
     default             => (new HomeController)->index(),
 };
