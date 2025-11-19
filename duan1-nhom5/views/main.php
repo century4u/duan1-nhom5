@@ -28,6 +28,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>?action=tours">Quản lý Tour</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= BASE_URL ?>?action=bookings">Đặt Tour</a>
+                </li>
             </ul>
         </div>
     </nav>
