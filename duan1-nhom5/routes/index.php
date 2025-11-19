@@ -18,5 +18,14 @@ match ($action) {
     'tour-categories'           => (new TourCategoryController)->index(),
     'tour-categories/view-tours' => (new TourCategoryController)->viewTours(),
     
+    // Booking management routes
+    'bookings'             => (new BookingController)->index(),
+    'bookings/create'      => (new BookingController)->create(),
+    'bookings/store'       => (new BookingController)->store(),
+    'bookings/show'        => (new BookingController)->show(),
+    'bookings/edit'        => (new BookingController)->edit(),
+    'bookings/update'      => (new BookingController)->update(),
+    'bookings/delete'      => (new BookingController)->delete(),
+    
     default             => (new HomeController)->index(),
 };
