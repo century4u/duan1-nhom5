@@ -6,6 +6,7 @@ class BookingController
     private $bookingDetailModel;
     private $tourModel;
     private $tourPriceModel;
+    private $statusHistoryModel;
 
     public function __construct()
     {
@@ -13,6 +14,7 @@ class BookingController
         $this->bookingDetailModel = new BookingDetailModel();
         $this->tourModel = new TourModel();
         $this->tourPriceModel = new TourPriceModel();
+        $this->statusHistoryModel = new BookingStatusHistoryModel();
     }
 
     /**
@@ -180,9 +182,99 @@ class BookingController
         // Xác định loại booking
         $booking['booking_type'] = $booking['participants_count'] <= 2 ? 'individual' : 'group';
 
+        // Lấy lịch sử thay đổi trạng thái
+        $statusHistory = $this->statusHistoryModel->getByBookingId($id);
+        $booking['status_history'] = $statusHistory;
+
+        // Lấy danh sách trạng thái có thể chuyển
+        $currentStatus = $booking['status'];
+        $availableStatuses = [];
+        $allStatuses = BookingModel::getStatuses();
+        foreach ($allStatuses as $statusKey => $statusLabel) {
+            if (BookingModel::canChangeStatus($currentStatus, $statusKey)) {
+                $availableStatuses[$statusKey] = $statusLabel;
+            }
+        }
+
         $title = 'Chi tiết Đặt Tour #' . $booking['id'];
         $view = 'booking/show';
         require_once PATH_VIEW_MAIN;
+    }
+
+    /**
+     * Cập nhật trạng thái booking
+     */
+    public function updateStatus()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '?action=bookings');
+            exit;
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        $newStatus = $_POST['status'] ?? '';
+        $depositAmount = !empty($_POST['deposit_amount']) ? (float)$_POST['deposit_amount'] : null;
+        $changeReason = $_POST['change_reason'] ?? '';
+        $notes = $_POST['notes'] ?? '';
+
+        // Kiểm tra booking tồn tại
+        $booking = $this->bookingModel->findById($id);
+        if (!$booking) {
+            $_SESSION['error'] = 'Không tìm thấy booking!';
+            header('Location: ' . BASE_URL . '?action=bookings');
+            exit;
+        }
+
+        // Kiểm tra phân quyền (mở rộng - hiện tại cho phép tất cả)
+        // TODO: Thêm logic kiểm tra role user
+        $currentUserId = $_SESSION['user_id'] ?? null; // Giả sử có session user_id
+
+        // Kiểm tra trạng thái hợp lệ
+        $statuses = BookingModel::getStatuses();
+        if (!isset($statuses[$newStatus])) {
+            $_SESSION['error'] = 'Trạng thái không hợp lệ!';
+            header('Location: ' . BASE_URL . '?action=bookings/show&id=' . $id);
+            exit;
+        }
+
+        // Kiểm tra có thể chuyển trạng thái không
+        if (!BookingModel::canChangeStatus($booking['status'], $newStatus)) {
+            $_SESSION['error'] = 'Không thể chuyển từ trạng thái "' . $statuses[$booking['status']] . '" sang "' . $statuses[$newStatus] . '"!';
+            header('Location: ' . BASE_URL . '?action=bookings/show&id=' . $id);
+            exit;
+        }
+
+        // Validate deposit_amount nếu chuyển sang trạng thái "Đã cọc"
+        if ($newStatus === 'deposit' && $depositAmount === null) {
+            $_SESSION['error'] = 'Vui lòng nhập số tiền cọc!';
+            header('Location: ' . BASE_URL . '?action=bookings/show&id=' . $id);
+            exit;
+        }
+
+        if ($newStatus === 'deposit' && $depositAmount > $booking['total_price']) {
+            $_SESSION['error'] = 'Số tiền cọc không được lớn hơn tổng giá!';
+            header('Location: ' . BASE_URL . '?action=bookings/show&id=' . $id);
+            exit;
+        }
+
+        // Cập nhật trạng thái
+        $result = $this->bookingModel->updateStatus(
+            $id,
+            $newStatus,
+            $currentUserId,
+            $depositAmount,
+            $changeReason,
+            $notes
+        );
+
+        if ($result) {
+            $_SESSION['success'] = 'Cập nhật trạng thái thành công!';
+        } else {
+            $_SESSION['error'] = 'Có lỗi xảy ra khi cập nhật trạng thái!';
+        }
+
+        header('Location: ' . BASE_URL . '?action=bookings/show&id=' . $id);
+        exit;
     }
 
     /**

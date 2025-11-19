@@ -102,6 +102,91 @@ class BookingModel extends BaseModel
     }
 
     /**
+     * Cập nhật trạng thái booking (và lưu lịch sử)
+     */
+    public function updateStatus($id, $newStatus, $changedBy = null, $depositAmount = null, $changeReason = null, $notes = null)
+    {
+        // Lấy trạng thái hiện tại
+        $booking = $this->findById($id);
+        if (!$booking) {
+            return false;
+        }
+
+        $oldStatus = $booking['status'];
+
+        // Nếu trạng thái không thay đổi
+        if ($oldStatus === $newStatus) {
+            return true;
+        }
+
+        // Cập nhật trạng thái
+        $sql = "UPDATE {$this->table} SET 
+                status = :status";
+        
+        $params = [
+            'id' => $id,
+            'status' => $newStatus
+        ];
+
+        // Cập nhật deposit_amount nếu có
+        if ($depositAmount !== null) {
+            $sql .= ", deposit_amount = :deposit_amount";
+            $params['deposit_amount'] = $depositAmount;
+        }
+
+        $sql .= " WHERE id = :id";
+
+        $stmt = $this->pdo->prepare($sql);
+        $result = $stmt->execute($params);
+
+        // Lưu lịch sử thay đổi
+        if ($result) {
+            $historyModel = new BookingStatusHistoryModel();
+            $historyModel->create([
+                'booking_id' => $id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'changed_by' => $changedBy,
+                'change_reason' => $changeReason,
+                'notes' => $notes
+            ]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Lấy danh sách trạng thái hợp lệ
+     */
+    public static function getStatuses()
+    {
+        return [
+            'pending' => 'Chờ xác nhận',
+            'deposit' => 'Đã cọc',
+            'confirmed' => 'Đã xác nhận',
+            'completed' => 'Hoàn tất',
+            'cancelled' => 'Hủy'
+        ];
+    }
+
+    /**
+     * Kiểm tra có thể chuyển từ trạng thái này sang trạng thái khác không
+     */
+    public static function canChangeStatus($fromStatus, $toStatus)
+    {
+        // Quy tắc chuyển trạng thái
+        $allowedTransitions = [
+            'pending' => ['deposit', 'confirmed', 'cancelled'],
+            'deposit' => ['confirmed', 'cancelled'],
+            'confirmed' => ['completed', 'cancelled'],
+            'completed' => [], // Không thể chuyển từ hoàn tất
+            'cancelled' => [] // Không thể chuyển từ hủy
+        ];
+
+        return in_array($toStatus, $allowedTransitions[$fromStatus] ?? []);
+    }
+
+    /**
      * Xóa booking
      */
     public function delete($id)
