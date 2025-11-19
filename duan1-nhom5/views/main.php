@@ -16,12 +16,20 @@
 
 <body>
 
-    <nav class="navbar navbar-expand-xxl bg-light justify-content-center">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link text-uppercase" href="<?= BASE_URL ?>"><b>Home</b></a>
-            </li>
-        </ul>
+    <nav class="navbar navbar-expand-xxl bg-light">
+        <div class="container">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link text-uppercase" href="<?= BASE_URL ?>"><b>Home</b></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= BASE_URL ?>?action=tour-categories">Danh mục Tour</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= BASE_URL ?>?action=tours">Quản lý Tour</a>
+                </li>
+            </ul>
+        </div>
     </nav>
 
     <div class="container">
