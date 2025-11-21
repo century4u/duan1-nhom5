@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -40,6 +41,7 @@
 
     <div class="container">
         <h1 class="mt-3 mb-3"><?= $title ?? 'Home' ?></h1>
+<a class="nav-link" href="<?= BASE_URL ?>?action=hvd">HDV</a>
 
         <div class="row">
             <?php

@@ -36,6 +36,11 @@ match ($action) {
     'guides/edit'        => (new GuideController)->edit(),
     'guides/update'      => (new GuideController)->update(),
     'guides/delete'      => (new GuideController)->delete(),
+    // HDV (Hướng dẫn viên) standalone dashboard
+    'hvd'                => (new HvdController)->home(),
+    'hvd/home'           => (new HvdController)->home(),
+    'hvd/tours'          => (new HvdController)->tours(),
+    'hvd/tours/show'     => (new HvdController)->show(),
     
     default             => (new HomeController)->index(),
 };
