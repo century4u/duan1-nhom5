@@ -37,5 +37,13 @@ match ($action) {
     'guides/update'      => (new GuideController)->update(),
     'guides/delete'      => (new GuideController)->delete(),
     
+    // Authentication routes
+    'login'              => (new AuthController)->login(),
+    'login/process'      => (new AuthController)->processLogin(),
+    'register'           => (new AuthController)->register(),
+    'register/process'   => (new AuthController)->processRegister(),
+    'logout'             => (new AuthController)->logout(),
+    'forgot-password'    => (new AuthController)->forgotPassword(),
+    
     default             => (new HomeController)->index(),
 };

@@ -21,3 +21,52 @@ if (!function_exists('upload_file')) {
         throw new Exception('Upload file không thành công!');
     }
 }
+
+if (!function_exists('isLoggedIn')) {
+    /**
+     * Kiểm tra user đã đăng nhập chưa
+     */
+    function isLoggedIn()
+    {
+        return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+    }
+}
+
+if (!function_exists('isAdmin')) {
+    /**
+     * Kiểm tra user có phải admin không
+     */
+    function isAdmin()
+    {
+        return isLoggedIn() && isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN';
+    }
+}
+
+if (!function_exists('requireLogin')) {
+    /**
+     * Yêu cầu đăng nhập, nếu chưa đăng nhập thì chuyển về trang login
+     */
+    function requireLogin()
+    {
+        if (!isLoggedIn()) {
+            $redirect = BASE_URL . '?action=login&redirect=' . urlencode($_SERVER['REQUEST_URI']);
+            header('Location: ' . $redirect);
+            exit;
+        }
+    }
+}
+
+if (!function_exists('requireAdmin')) {
+    /**
+     * Yêu cầu quyền admin
+     */
+    function requireAdmin()
+    {
+        requireLogin();
+        if (!isAdmin()) {
+            $_SESSION['error'] = 'Bạn không có quyền truy cập trang này!';
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+    }
+}
