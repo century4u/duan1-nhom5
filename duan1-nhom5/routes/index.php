@@ -42,5 +42,13 @@ match ($action) {
     'hvd/tours'          => (new HvdController)->tours(),
     'hvd/tours/show'     => (new HvdController)->show(),
     
+    // Authentication routes
+    'login'              => (new AuthController)->login(),
+    'login/process'      => (new AuthController)->processLogin(),
+    'register'           => (new AuthController)->register(),
+    'register/process'   => (new AuthController)->processRegister(),
+    'logout'             => (new AuthController)->logout(),
+    'forgot-password'    => (new AuthController)->forgotPassword(),
+    
     default             => (new HomeController)->index(),
 };

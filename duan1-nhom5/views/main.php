@@ -36,6 +36,30 @@
                     <a class="nav-link" href="<?= BASE_URL ?>?action=guides">Quản lý HDV</a>
                 </li>
             </ul>
+            <ul class="navbar-nav">
+                <?php if (isLoggedIn()): ?>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <strong><?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username']) ?></strong>
+                            <?php if (isAdmin()): ?>
+                                <span class="badge bg-danger">Admin</span>
+                            <?php endif; ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Thông tin tài khoản</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="<?= BASE_URL ?>?action=logout">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                <?php else: ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= BASE_URL ?>?action=login">Đăng nhập</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= BASE_URL ?>?action=register">Đăng ký</a>
+                    </li>
+                <?php endif; ?>
+            </ul>
         </div>
     </nav>
 

@@ -1,33 +1,7 @@
 <div class="col-12">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2>Danh sách Tour - <?= htmlspecialchars($categoryName) ?></h2>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="<?= BASE_URL ?>">Trang chủ</a></li>
-                    <li class="breadcrumb-item"><a href="<?= BASE_URL ?>?action=tour-categories">Danh mục Tour</a></li>
-                    <li class="breadcrumb-item active"><?= htmlspecialchars($categoryName) ?></li>
-                </ol>
-            </nav>
-        </div>
+    <div class="d-flex justify-content-end mb-3">
         <a href="<?= BASE_URL ?>?action=tour-categories" class="btn btn-outline-secondary">Quay lại</a>
     </div>
-
-    <?php if (isset($_SESSION['success'])): ?>
-        <div class="alert alert-success alert-dismissible fade show">
-            <?= $_SESSION['success'] ?>
-            <?php unset($_SESSION['success']); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['error'])): ?>
-        <div class="alert alert-danger alert-dismissible fade show">
-            <?= $_SESSION['error'] ?>
-            <?php unset($_SESSION['error']); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
 
     <!-- Bộ lọc -->
     <div class="card mb-3">

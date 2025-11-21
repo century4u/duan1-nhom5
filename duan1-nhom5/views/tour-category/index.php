@@ -1,6 +1,6 @@
 <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Quản lý Danh mục Tour</h2>
+        <!-- <h2>Quản lý Danh mục Tour</h2> -->
         <a href="<?= BASE_URL ?>?action=tours" class="btn btn-outline-primary">Quản lý Tour</a>
     </div>
 

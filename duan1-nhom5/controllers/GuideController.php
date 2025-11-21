@@ -50,7 +50,7 @@ class GuideController
 
         $title = 'Quản lý Hướng dẫn viên';
         $view = 'guide/index';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
@@ -63,7 +63,7 @@ class GuideController
 
         $title = 'Tạo HDV Mới';
         $view = 'guide/create';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
@@ -179,7 +179,7 @@ class GuideController
 
         $title = 'Chi tiết HDV - ' . $guide['full_name'];
         $view = 'guide/show';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
@@ -208,7 +208,7 @@ class GuideController
 
         $title = 'Chỉnh sửa HDV';
         $view = 'guide/edit';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**

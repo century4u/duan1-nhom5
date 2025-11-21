@@ -1,6 +1,6 @@
 <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Quản lý Hướng dẫn viên</h2>
+        <!-- <h2>Quản lý Hướng dẫn viên</h2> -->
         <a href="<?= BASE_URL ?>?action=guides/create" class="btn btn-primary">Thêm HDV Mới</a>
     </div>
 

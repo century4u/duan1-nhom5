@@ -42,7 +42,7 @@ class TourController
 
         $title = 'Quản lý Tour';
         $view = 'tour/index';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
@@ -53,7 +53,7 @@ class TourController
         $categories = TourModel::getCategories();
         $title = 'Tạo Tour Mới';
         $view = 'tour/create';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
@@ -137,7 +137,7 @@ class TourController
         $categories = TourModel::getCategories();
         $title = 'Chỉnh sửa Tour';
         $view = 'tour/edit';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
@@ -255,7 +255,7 @@ class TourController
 
         $title = 'Chi tiết Tour - ' . $tour['name'];
         $view = 'tour/show';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**

@@ -42,7 +42,7 @@ class BookingController
 
         $title = 'Quản lý Đặt Tour';
         $view = 'booking/index';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
@@ -75,7 +75,7 @@ class BookingController
 
         $title = 'Đặt Tour Mới';
         $view = 'booking/create';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
@@ -198,7 +198,7 @@ class BookingController
 
         $title = 'Chi tiết Đặt Tour #' . $booking['id'];
         $view = 'booking/show';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
