@@ -74,6 +74,10 @@ class TourCategoryController
         $categoryName = $categories[$category];
 
         $title = 'Danh sách Tour - ' . $categoryName;
+        $breadcrumb = [
+            ['name' => 'Danh mục Tour', 'url' => BASE_URL . '?action=tour-categories'],
+            ['name' => $categoryName, 'active' => true]
+        ];
         $view = 'tour-category/tours';
         require_once PATH_VIEW_ADMIN;
     }
