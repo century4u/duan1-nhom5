@@ -89,6 +89,13 @@
                     </a>
                 </li>
 
+                <li class="menu-item">
+                    <a href="<?= BASE_URL ?>?action=departure-schedules" class="menu-link <?= (isset($_GET['action']) && strpos($_GET['action'] ?? '', 'departure-schedules') === 0) ? 'active' : '' ?>">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>Lịch Khởi Hành</span>
+                    </a>
+                </li>
+
                 <?php if (isAdmin()): ?>
                 <li class="menu-divider">
                     <span>Hệ thống</span>

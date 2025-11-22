@@ -50,5 +50,27 @@ match ($action) {
     'logout'             => (new AuthController)->logout(),
     'forgot-password'    => (new AuthController)->forgotPassword(),
     
+    // Departure schedule management routes
+    'departure-schedules'                => (new DepartureScheduleController)->index(),
+    'departure-schedules/create'         => (new DepartureScheduleController)->create(),
+    'departure-schedules/store'          => (new DepartureScheduleController)->store(),
+    'departure-schedules/show'           => (new DepartureScheduleController)->show(),
+    'departure-schedules/edit'           => (new DepartureScheduleController)->edit(),
+    'departure-schedules/update'         => (new DepartureScheduleController)->update(),
+    'departure-schedules/delete'         => (new DepartureScheduleController)->delete(),
+    'departure-schedules/assign-guide'   => (new DepartureScheduleController)->assignGuide(),
+    'departure-schedules/process-assign-guide' => (new DepartureScheduleController)->processAssignGuide(),
+    'departure-schedules/assign-service' => (new DepartureScheduleController)->assignService(),
+    'departure-schedules/process-assign-service' => (new DepartureScheduleController)->processAssignService(),
+    'departure-schedules/update-assignment-status' => (new DepartureScheduleController)->updateAssignmentStatus(),
+    
+    // Authentication routes
+    'login'              => (new AuthController)->login(),
+    'login/process'      => (new AuthController)->processLogin(),
+    'register'           => (new AuthController)->register(),
+    'register/process'   => (new AuthController)->processRegister(),
+    'logout'             => (new AuthController)->logout(),
+    'forgot-password'    => (new AuthController)->forgotPassword(),
+    
     default             => (new HomeController)->index(),
 };
