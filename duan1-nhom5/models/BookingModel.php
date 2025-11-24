@@ -15,7 +15,7 @@ class BookingModel extends BaseModel
                 LEFT JOIN tours t ON b.tour_id = t.id
                 LEFT JOIN users u ON b.user_id = u.id
                 WHERE 1=1";
-        
+
         $params = [];
 
         if (!empty($filters['status'])) {
@@ -70,7 +70,7 @@ class BookingModel extends BaseModel
                 (user_id, tour_id, booking_date, total_price, status) 
                 VALUES 
                 (:user_id, :tour_id, :booking_date, :total_price, :status)";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'user_id' => $data['user_id'] ?? null,
@@ -82,17 +82,15 @@ class BookingModel extends BaseModel
 
         return $result ? $this->pdo->lastInsertId() : false;
     }
+    //   Cập nhật booking
 
-    /**
-     * Cập nhật booking
-     */
     public function update($id, $data)
     {
         $sql = "UPDATE {$this->table} SET 
                 status = :status,
                 total_price = :total_price
                 WHERE id = :id";
-        
+
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             'id' => $id,
@@ -122,7 +120,7 @@ class BookingModel extends BaseModel
         // Cập nhật trạng thái
         $sql = "UPDATE {$this->table} SET 
                 status = :status";
-        
+
         $params = [
             'id' => $id,
             'status' => $newStatus
@@ -232,13 +230,13 @@ class BookingModel extends BaseModel
         // Lấy thông tin tour
         $tourModel = new TourModel();
         $tour = $tourModel->findById($tourId);
-        
+
         if (!$tour) {
             return false;
         }
 
         $maxParticipants = $tour['max_participants'] ?? null;
-        
+
         // Nếu không giới hạn số người
         if ($maxParticipants === null) {
             return true;
@@ -246,10 +244,10 @@ class BookingModel extends BaseModel
 
         // Đếm số người đã đặt
         $bookedParticipants = $this->countParticipantsByTourId($tourId);
-        
+
         // Tính số chỗ còn lại
         $availableSlots = $maxParticipants - $bookedParticipants;
-        
+
         return [
             'available' => $availableSlots > 0,
             'available_slots' => $availableSlots,

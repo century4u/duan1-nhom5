@@ -48,7 +48,7 @@ class DepartureScheduleController
 
         $title = 'Quản lý Lịch Khởi Hành';
         $view = 'departure-schedule/index';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -60,7 +60,7 @@ class DepartureScheduleController
         
         $title = 'Tạo Lịch Khởi Hành Mới';
         $view = 'departure-schedule/create';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
