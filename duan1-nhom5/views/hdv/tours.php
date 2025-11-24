@@ -35,7 +35,7 @@
 <header class="bg-primary text-white py-3 mb-4">
   <div class="container d-flex justify-content-between align-items-center">
     <a class="nav-link" href="<?= BASE_URL ?>?action=hvd">
-    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào...</h1></a>
+    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào, <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User') ?></h1></a>
     <nav>
       <a href="<?= BASE_URL ?>?action=hvd/tours" class="btn btn-light btn-sm me-2"><i class="bi bi-compass"></i> Tour</a>
       <a href="calendar.html" class="btn btn-light btn-sm me-2"><i class="bi bi-calendar3"></i> Lịch làm việc</a>
@@ -70,20 +70,92 @@
   <h2 class="mb-3">Danh sách tour được phân công</h2>
 
   <?php if (!empty($assignedTours)): ?>
-    <?php foreach ($assignedTours as $item):
+    <?php foreach ($assignedTours as $idx => $item):
       $h = $item['history'];
       $t = $item['tour'];
+      $schedules = $item['schedules'] ?? [];
+      $participants = $item['participants'] ?? [];
+      $collapseId = 'tourDetail' . ($t['id'] ?? $idx);
     ?>
       <div class="card mb-3">
-        <div class="card-body d-flex justify-content-between align-items-start">
-          <div>
-            <h5 class="mb-1"><?= htmlspecialchars($t['name'] ?? $t['tour_name'] ?? '') ?></h5>
-            <div class="text-muted small"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($t['destination'] ?? '') ?></div>
-            <div class="text-muted small">Thời gian: <?= htmlspecialchars($h['start_date'] ?? '-') ?> → <?= htmlspecialchars($h['end_date'] ?? '-') ?></div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h5 class="mb-1"><?= htmlspecialchars($t['name'] ?? $t['tour_name'] ?? '') ?></h5>
+              <div class="text-muted small"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($t['departure_location'] ?? '') ?> → <?= htmlspecialchars($t['destination'] ?? '') ?></div>
+              <div class="text-muted small">Thời gian: <?= htmlspecialchars($h['start_date'] ?? '-') ?> → <?= htmlspecialchars($h['end_date'] ?? '-') ?></div>
+            </div>
+            <div class="text-end">
+              <button class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#<?= $collapseId ?>">Xem chi tiết</button>
+            </div>
           </div>
-          <div class="text-end">
-            <a href="<?= BASE_URL ?>?action=tours/show&id=<?= htmlspecialchars($t['id'] ?? $t['tour_id'] ?? '') ?>" class="btn btn-outline-primary btn-sm">Mở chi tiết tour</a>
-            <a href="<?= BASE_URL ?>?action=hvd&guide_id=<?= urlencode($_GET['guide_id'] ?? '') ?>" class="btn btn-link btn-sm">Quay lại</a>
+
+          <?php if (!empty($h)): ?>
+            <div class="alert alert-info mt-3">
+              <strong>Phân công cho bạn:</strong>
+              <div>Thời gian: <?= htmlspecialchars($h['start_date'] ?? '-') ?> → <?= htmlspecialchars($h['end_date'] ?? '-') ?></div>
+              <?php if (!empty($h['notes'])): ?><div class="mt-1">Ghi chú: <?= nl2br(htmlspecialchars($h['notes'])) ?></div><?php endif; ?>
+            </div>
+          <?php endif; ?>
+
+          <div class="collapse mt-3" id="<?= $collapseId ?>">
+            <div class="card card-body">
+              <?php if (!empty($h['notes'])): ?>
+                <div class="mb-2"><strong>Nhiệm vụ/Ghi chú của bạn:</strong>
+                  <div class="text-muted small" style="white-space:pre-line"><?= nl2br(htmlspecialchars($h['notes'])) ?></div>
+                </div>
+              <?php endif; ?>
+
+              <div class="mb-3">
+                <h6 class="mb-2">Lịch trình chi tiết</h6>
+                <?php if (!empty($schedules)): ?>
+                  <?php foreach ($schedules as $sched): ?>
+                    <div class="mb-2">
+                      <div class="d-flex justify-content-between">
+                        <div><strong>Ngày <?= htmlspecialchars($sched['day_number'] ?? '-') ?></strong> <?= !empty($sched['date']) ? ' - ' . htmlspecialchars($sched['date']) : '' ?></div>
+                        <div class="text-muted small"><?= htmlspecialchars($sched['transport'] ?? '') ?></div>
+                      </div>
+                      <div class="fw-semibold"><?= htmlspecialchars($sched['title'] ?? '') ?></div>
+                      <?php if (!empty($sched['description'])): ?><div class="text-muted small mb-1" style="white-space:pre-line"><?= nl2br(htmlspecialchars($sched['description'])) ?></div><?php endif; ?>
+
+                      <?php if (!empty($sched['activities_array'])): ?>
+                        <div class="text-muted small">Hoạt động:</div>
+                        <ul class="small mb-1">
+                          <?php foreach ($sched['activities_array'] as $act): ?>
+                            <li><?= htmlspecialchars(is_string($act) ? $act : json_encode($act)) ?></li>
+                          <?php endforeach; ?>
+                        </ul>
+                      <?php endif; ?>
+
+                      <div class="text-muted small">Ăn ở: <?= htmlspecialchars($sched['meals'] ?? '-') ?> | Lưu trú: <?= htmlspecialchars($sched['accommodation'] ?? '-') ?></div>
+                    </div>
+                    <hr />
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <div class="text-muted">Chưa có lịch trình chi tiết.</div>
+                <?php endif; ?>
+              </div>
+
+              <div>
+                <h6 class="mb-2">Danh sách khách / Nhiệm vụ cụ thể</h6>
+                <?php if (!empty($participants)): ?>
+                  <div class="small">
+                    <?php foreach ($participants as $pb): 
+                      $b = $pb['booking'];
+                      $details = $pb['details'];
+                    ?>
+                      <div class="mb-2">
+                        <div><strong>Người đặt:</strong> <?= htmlspecialchars($b['contact_name'] ?? '-') ?></div>
+                        <div class="text-muted small">Số khách: <?= count($details) ?> | Email: <?= htmlspecialchars($b['contact_email'] ?? '-') ?> | Điện thoại: <?= htmlspecialchars($b['contact_phone'] ?? '-') ?></div>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+                <?php else: ?>
+                  <div class="text-muted small">Chưa có khách đăng ký.</div>
+                <?php endif; ?>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>

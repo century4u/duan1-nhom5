@@ -35,7 +35,7 @@
 <header class="bg-primary text-white py-3 mb-4">
   <div class="container d-flex justify-content-between align-items-center">
     <a class="nav-link" href="<?= BASE_URL ?>?action=hvd">
-    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào...</h1></a>
+    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào, <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User') ?></h1></a>
     <nav>
       <a href="<?= BASE_URL ?>?action=hvd/tourss" class="btn btn-light btn-sm me-2"><i class="bi bi-compass"></i>Tổng Tour</a>
       <a href="calendar.html" class="btn btn-light btn-sm me-2"><i class="bi bi-calendar3"></i> Lịch làm việc</a>
@@ -85,9 +85,25 @@
                 <div class="text-muted small">Thời gian: <?= htmlspecialchars($t['duration'] ?? '-') ?></div>
               </div>
               <div class="text-end">
-                <span class="badge bg-primary"><?= htmlspecialchars($t['status'] ?? '') ?></span>
+                <?php
+                  $statusLabel = '';
+                  if (isset($t['status'])) {
+                      $statusLabel = ($t['status'] == 0) ? 'Sắp diễn ra' : $t['status'];
+                  }
+                ?>
+                <span class="badge bg-primary"><?= htmlspecialchars($statusLabel) ?></span>
                 <div class="text-muted small">Giá: <?= isset($t['price']) ? number_format($t['price'], 0, ',', '.') . ' ₫' : '-' ?></div>
-                <div class="text-muted small">Số khách đã đăng ký: <?= htmlspecialchars($t['booked_participants'] ?? 0) ?> / <?= htmlspecialchars($t['max_participants'] ?? $t['max_guests'] ?? '-') ?></div>
+                <?php
+                  // Nếu controller đã chuẩn bị sẵn booked_participants thì dùng, nếu không thì tính bằng model
+                  $bookedCount = $t['booked_participants'] ?? null;
+                  if ($bookedCount === null) {
+                      // Tính tạm ở view (fallback) — tốt nhất là controller nên cung cấp dữ liệu này
+                      require_once PATH_MODEL . 'BookingModel.php';
+                      $bm = new BookingModel();
+                      $bookedCount = $bm->countParticipantsByTourId($t['id'] ?? $t['tour_id'] ?? 0);
+                  }
+                ?>
+                <div class="text-muted small">Số khách đã đăng ký: <?= htmlspecialchars($bookedCount ?? 0) ?> / <?= htmlspecialchars($t['max_participants'] ?? $t['max_guests'] ?? '-') ?></div>
               </div>
             </div>
           </div>

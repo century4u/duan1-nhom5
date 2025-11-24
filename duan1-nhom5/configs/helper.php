@@ -70,3 +70,30 @@ if (!function_exists('requireAdmin')) {
         }
     }
 }
+
+if (!function_exists('isHvd')) {
+    /**
+     * Kiểm tra user có phải HDV không
+     */
+    function isHvd()
+    {
+        if (!isLoggedIn() || !isset($_SESSION['role'])) return false;
+        $r = strtoupper(trim($_SESSION['role'] ?? ''));
+        return in_array($r, ['HDV', 'HVD'], true);
+    }
+}
+
+if (!function_exists('requireHvd')) {
+    /**
+     * Yêu cầu quyền HDV
+     */
+    function requireHvd()
+    {
+        requireLogin();
+        if (!isHvd()) {
+            $_SESSION['error'] = 'Bạn không có quyền truy cập trang này!';
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+    }
+}

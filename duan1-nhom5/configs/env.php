@@ -18,6 +18,7 @@ define('BASE_ASSETS_UPLOADS', BASE_URL . 'assets/uploads/');
 // Đường dẫn tuyệt đối trong server
 define('PATH_ROOT', __DIR__ . '/../');
 define('PATH_VIEW', PATH_ROOT . 'views/');
+define('PATH_VIEW_ADMIN', PATH_VIEW . 'admin/');
 define('PATH_VIEW_MAIN', PATH_ROOT . 'views/main.php');
 define('PATH_ASSETS_UPLOADS', PATH_ROOT . 'assets/uploads/');
 define('PATH_CONTROLLER', PATH_ROOT . 'controllers/');
