@@ -63,7 +63,7 @@ class GuideController
 
         $title = 'Tạo HDV Mới';
         $view = 'guide/create';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -179,7 +179,7 @@ class GuideController
 
         $title = 'Chi tiết HDV - ' . $guide['full_name'];
         $view = 'guide/show';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -208,7 +208,7 @@ class GuideController
 
         $title = 'Chỉnh sửa HDV';
         $view = 'guide/edit';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**

@@ -48,7 +48,7 @@ class DepartureScheduleController
 
         $title = 'Quản lý Lịch Khởi Hành';
         $view = 'departure-schedule/index';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -60,7 +60,7 @@ class DepartureScheduleController
         
         $title = 'Tạo Lịch Khởi Hành Mới';
         $view = 'departure-schedule/create';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -141,7 +141,7 @@ class DepartureScheduleController
 
         $title = 'Chi tiết Lịch Khởi Hành - ' . $schedule['tour_name'];
         $view = 'departure-schedule/show';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -162,7 +162,7 @@ class DepartureScheduleController
 
         $title = 'Chỉnh sửa Lịch Khởi Hành';
         $view = 'departure-schedule/edit';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -282,7 +282,7 @@ class DepartureScheduleController
 
         $title = 'Phân bổ Hướng dẫn viên';
         $view = 'departure-schedule/assign-guide';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -388,7 +388,7 @@ class DepartureScheduleController
 
         $title = 'Phân bổ Dịch vụ - ' . ucfirst($serviceType);
         $view = 'departure-schedule/assign-service';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
