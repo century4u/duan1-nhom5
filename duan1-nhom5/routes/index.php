@@ -64,6 +64,31 @@ match ($action) {
     'departure-schedules/process-assign-service' => (new DepartureScheduleController)->processAssignService(),
     'departure-schedules/update-assignment-status' => (new DepartureScheduleController)->updateAssignmentStatus(),
     
+    // Tour customer management routes (Danh sách khách theo tour)
+    'tour-customers'             => (new TourCustomerController)->index(),
+    'tour-customers/show'        => (new TourCustomerController)->show(),
+    'tour-customers/export'      => (new TourCustomerController)->export(),
+    
+    // Group list management routes (In danh sách đoàn)
+    'group-lists'                => (new GroupListController)->index(),
+    'group-lists/show'           => (new GroupListController)->show(),
+    'group-lists/print'          => (new GroupListController)->print(),
+    
+    // Check-in management routes
+    'checkins'                   => (new CheckinController)->index(),
+    'checkins/show'              => (new CheckinController)->show(),
+    'checkins/process'           => (new CheckinController)->process(),
+    'checkins/update'            => (new CheckinController)->update(),
+    
+    // Room assignment management routes (Phân phòng khách sạn)
+    'room-assignments'           => (new RoomAssignmentController)->index(),
+    'room-assignments/show'      => (new RoomAssignmentController)->show(),
+    'room-assignments/create'    => (new RoomAssignmentController)->create(),
+    'room-assignments/store'     => (new RoomAssignmentController)->store(),
+    'room-assignments/edit'      => (new RoomAssignmentController)->edit(),
+    'room-assignments/update'    => (new RoomAssignmentController)->update(),
+    'room-assignments/delete'    => (new RoomAssignmentController)->delete(),
+    
     // Authentication routes
     'login'              => (new AuthController)->login(),
     'login/process'      => (new AuthController)->processLogin(),
