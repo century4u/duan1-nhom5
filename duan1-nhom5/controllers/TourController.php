@@ -42,7 +42,7 @@ class TourController
 
         $title = 'Quản lý Tour';
         $view = 'tour/index';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**

@@ -35,7 +35,7 @@
 <header class="bg-primary text-white py-3 mb-4">
   <div class="container d-flex justify-content-between align-items-center">
     <a class="nav-link" href="<?= BASE_URL ?>?action=hvd">
-    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào...</h1></a>
+    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào, <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User') ?></h1></a>
     <nav>
       <a href="<?= BASE_URL ?>?action=hvd/tourss" class="btn btn-light btn-sm me-2"><i class="bi bi-compass"></i>Tổng Tour</a>
       <a href="calendar.html" class="btn btn-light btn-sm me-2"><i class="bi bi-calendar3"></i> Lịch làm việc</a>
@@ -119,7 +119,6 @@
         <div class="card-body">
           <div class="mb-2"><strong>Giá:</strong> <?= isset($tour['price']) ? number_format($tour['price'],0,',','.').' ₫' : '-' ?></div>
           <div class="mb-2"><strong>Số khách tối đa:</strong> <?= htmlspecialchars($tour['max_participants'] ?? $tour['max_guests'] ?? '-') ?></div>
-          <div class="mb-2"><strong>Thời lượng:</strong> <?= htmlspecialchars($tour['duration'] ?? '-') ?></div>
         </div>
       </div>
 

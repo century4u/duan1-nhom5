@@ -28,7 +28,7 @@ class TourCategoryController
 
         $title = 'Quản lý Danh mục Tour';
         $view = 'tour-category/index';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
@@ -79,7 +79,7 @@ class TourCategoryController
             ['name' => $categoryName, 'active' => true]
         ];
         $view = 'tour-category/tours';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 }
 
