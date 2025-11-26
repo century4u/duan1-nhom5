@@ -198,7 +198,7 @@ class BookingController
 
         $title = 'Chi tiết Đặt Tour #' . $booking['id'];
         $view = 'booking/show';
-        require_once PATH_VIEW_ADMIN;
+        require_once PATH_VIEW_ADMIN.'main.php';
     }
 
     /**
