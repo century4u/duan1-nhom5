@@ -100,6 +100,9 @@ match ($action) {
     'operation-reports/compare' => (new OperationReportController)->compare(),
     'operation-reports/export'  => (new OperationReportController)->export(),
     
+    // Statistics routes (Thống kê)
+    'statistics'                 => (new StatisticsController)->index(),
+    
     // Authentication routes
     'login'              => (new AuthController)->login(),
     'login/process'      => (new AuthController)->processLogin(),

@@ -98,18 +98,22 @@
 
                 <?php if (isAdmin()): ?>
                 <li class="menu-divider">
+                    <span>Báo cáo & Thống kê</span>
+                </li>
+
+                <li class="menu-item">
+                    <a href="<?= BASE_URL ?>?action=operation-reports" class="menu-link <?= (isset($_GET['action']) && strpos($_GET['action'] ?? '', 'operation-reports') === 0) ? 'active' : '' ?>">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Báo cáo Vận hành Tour</span>
+                    </a>
+                </li>
+
+                <li class="menu-divider">
                     <span>Hệ thống</span>
                 </li>
 
                 <li class="menu-item">
-                    <a href="#" class="menu-link">
-                        <i class="bi bi-person-gear"></i>
-                        <span>Quản lý User</span>
-                    </a>
-                </li>
-
-                <li class="menu-item">
-                    <a href="#" class="menu-link">
+                    <a href="<?= BASE_URL ?>?action=statistics" class="menu-link <?= (isset($_GET['action']) && $_GET['action'] === 'statistics') ? 'active' : '' ?>">
                         <i class="bi bi-bar-chart"></i>
                         <span>Thống kê</span>
                     </a>
