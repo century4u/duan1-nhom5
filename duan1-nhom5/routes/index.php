@@ -67,6 +67,45 @@ match ($action) {
     'departure-schedules/process-assign-service' => (new DepartureScheduleController)->processAssignService(),
     'departure-schedules/update-assignment-status' => (new DepartureScheduleController)->updateAssignmentStatus(),
     
+    // Tour customer management routes (Danh sách khách theo tour)
+    'tour-customers'             => (new TourCustomerController)->index(),
+    'tour-customers/show'        => (new TourCustomerController)->show(),
+    'tour-customers/export'      => (new TourCustomerController)->export(),
+    
+    // Group list management routes (In danh sách đoàn)
+    'group-lists'                => (new GroupListController)->index(),
+    'group-lists/show'           => (new GroupListController)->show(),
+    'group-lists/print'          => (new GroupListController)->print(),
+    
+    // Check-in management routes
+    'checkins'                   => (new CheckinController)->index(),
+    'checkins/show'              => (new CheckinController)->show(),
+    'checkins/process'           => (new CheckinController)->process(),
+    'checkins/update'            => (new CheckinController)->update(),
+    
+    // Room assignment management routes (Phân phòng khách sạn)
+    'room-assignments'           => (new RoomAssignmentController)->index(),
+    'room-assignments/show'      => (new RoomAssignmentController)->show(),
+    'room-assignments/create'    => (new RoomAssignmentController)->create(),
+    'room-assignments/store'     => (new RoomAssignmentController)->store(),
+    'room-assignments/edit'      => (new RoomAssignmentController)->edit(),
+    'room-assignments/update'    => (new RoomAssignmentController)->update(),
+    'room-assignments/delete'    => (new RoomAssignmentController)->delete(),
+    
+    // Operation report routes (Báo cáo vận hành tour)
+    'operation-reports'          => (new OperationReportController)->index(),
+    'operation-reports/show'     => (new OperationReportController)->show(),
+    'operation-reports/create'   => (new OperationReportController)->create(),
+    'operation-reports/store'   => (new OperationReportController)->store(),
+    'operation-reports/edit'    => (new OperationReportController)->edit(),
+    'operation-reports/update'  => (new OperationReportController)->update(),
+    'operation-reports/delete'  => (new OperationReportController)->destroy(),
+    'operation-reports/compare' => (new OperationReportController)->compare(),
+    'operation-reports/export'  => (new OperationReportController)->export(),
+    
+    // Statistics routes (Thống kê)
+    'statistics'                 => (new StatisticsController)->index(),
+    
     // Authentication routes
     'login'              => (new AuthController)->login(),
     'login/process'      => (new AuthController)->processLogin(),

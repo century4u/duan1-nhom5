@@ -50,7 +50,7 @@ class GuideController
 
         $title = 'Quản lý Hướng dẫn viên';
         $view = 'guide/index';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
