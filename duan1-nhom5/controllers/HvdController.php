@@ -176,4 +176,63 @@ class HvdController {
 
         require_once PATH_VIEW . 'hdv/tour_show.php';
     }
+
+public function customerEdit() {
+    require_once PATH_MODEL . 'BookingDetailModel.php';
+    
+    $bookingDetailModel = new BookingDetailModel();
+    $customerId = $_GET['id'] ?? 0;
+    $tour_id = $_GET['tour_id'] ?? 0;
+    $guide_id = $_GET['guide_id'] ?? ($_SESSION['user_id'] ?? null);
+    
+    $customer = $bookingDetailModel->findById($customerId);
+    if (!$customer) {
+        $_SESSION['error'] = 'Không tìm thấy thông tin khách hàng!';
+        header('Location: ' . BASE_URL . '?action=hvd/tours/show&id=' . $tour_id . '&guide_id=' . $guide_id);
+        exit;
+    }
+    
+    require_once PATH_VIEW . 'hdv/customer_edit.php';
+}
+
+public function customerUpdate() {
+    require_once PATH_MODEL . 'BookingDetailModel.php';
+    
+    $bookingDetailModel = new BookingDetailModel();
+    $customerId = $_POST['id'] ?? 0;
+    $tour_id = $_POST['tour_id'] ?? 0;
+    $guide_id = $_POST['guide_id'] ?? ($_SESSION['user_id'] ?? null);
+    
+    // Lấy thông tin khách hàng hiện tại
+    $currentCustomer = $bookingDetailModel->findById($customerId);
+    if (!$currentCustomer) {
+        $_SESSION['error'] = 'Không tìm thấy thông tin khách hàng!';
+        header('Location: ' . BASE_URL . '?action=hvd/tours/show&id=' . $tour_id . '&guide_id=' . $guide_id);
+        exit;
+    }
+    
+    // Dữ liệu cập nhật
+    $updateData = [
+        'fullname' => $_POST['fullname'] ?? '',
+        'gender' => $_POST['gender'] ?? null,
+        'birthdate' => $_POST['birthdate'] ?? null,
+        'id_card' => $_POST['id_card'] ?? null,
+        'passport' => $_POST['passport'] ?? null,
+        'hobby' => $_POST['hobby'] ?? null,
+        'special_requirements' => $_POST['special_requirements'] ?? null,
+        'dietary_restrictions' => $_POST['dietary_restrictions'] ?? null
+    ];
+    
+    // Thực hiện cập nhật
+    $result = $bookingDetailModel->update($customerId, $updateData);
+    
+    if ($result) {
+        $_SESSION['success'] = 'Cập nhật thông tin khách hàng thành công!';
+    } else {
+        $_SESSION['error'] = 'Cập nhật thông tin khách hàng thất bại!';
+    }
+    
+    header('Location: ' . BASE_URL . '?action=hvd/tours/show&id=' . $tour_id . '&guide_id=' . $guide_id);
+    exit;
+}
 }

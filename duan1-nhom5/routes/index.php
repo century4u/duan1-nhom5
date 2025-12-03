@@ -41,6 +41,9 @@ match ($action) {
     'hvd/home'           => (new HvdController)->home(),
     'hvd/tours'          => (new HvdController)->tours(),
     'hvd/tours/show'     => (new HvdController)->show(),
+    'hvd/customer/edit'  => (new HvdController)->customerEdit(),    
+    'hvd/customer/update' => (new HvdController)->customerUpdate(),
+    
     
     // Authentication routes
     'login'              => (new AuthController)->login(),
@@ -112,4 +115,5 @@ match ($action) {
     'forgot-password'    => (new AuthController)->forgotPassword(),
     
     default             => (new HomeController)->index(),
+    
 };

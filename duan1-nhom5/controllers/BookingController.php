@@ -75,7 +75,7 @@ class BookingController
 
         $title = 'Đặt Tour Mới';
         $view = 'booking/create';
-        require_once PATH_VIEW_ADMIN . 'main.php';
+        require_once PATH_VIEW_ADMIN;
     }
 
     /**
