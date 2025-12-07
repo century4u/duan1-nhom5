@@ -14,11 +14,11 @@ class GuideTourHistoryModel extends BaseModel
                 LEFT JOIN tours t ON h.tour_id = t.id
                 WHERE h.guide_id = :guide_id
                 ORDER BY h.start_date DESC";
-        
+
         if ($limit) {
             $sql .= " LIMIT :limit";
         }
-        
+
         $stmt = $this->pdo->prepare($sql);
         $params = ['guide_id' => $guideId];
         if ($limit) {
@@ -37,7 +37,7 @@ class GuideTourHistoryModel extends BaseModel
                 (guide_id, tour_id, start_date, end_date, participants_count, rating, feedback, notes) 
                 VALUES 
                 (:guide_id, :tour_id, :start_date, :end_date, :participants_count, :rating, :feedback, :notes)";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'guide_id' => $data['guide_id'],
@@ -64,6 +64,19 @@ class GuideTourHistoryModel extends BaseModel
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['guide_id' => $guideId]);
         return $stmt->fetch();
+    }
+
+    /**
+     * Update tour assignment status
+     */
+    public function updateStatus($id, $status)
+    {
+        $sql = "UPDATE {$this->table} SET status = :status WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            'status' => $status,
+            'id' => $id
+        ]);
     }
 }
 

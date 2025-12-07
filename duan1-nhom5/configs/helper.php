@@ -12,6 +12,13 @@ if (!function_exists('debug')) {
 if (!function_exists('upload_file')) {
     function upload_file($folder, $file)
     {
+        $targetDir = PATH_ASSETS_UPLOADS . $folder . '/';
+
+        // Tạo thư mục nếu chưa tồn tại
+        if (!file_exists($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
         $targetFile = $folder . '/' . time() . '-' . $file["name"];
 
         if (move_uploaded_file($file["tmp_name"], PATH_ASSETS_UPLOADS . $targetFile)) {
@@ -77,7 +84,8 @@ if (!function_exists('isHvd')) {
      */
     function isHvd()
     {
-        if (!isLoggedIn() || !isset($_SESSION['role'])) return false;
+        if (!isLoggedIn() || !isset($_SESSION['role']))
+            return false;
         $r = strtoupper(trim($_SESSION['role'] ?? ''));
         return in_array($r, ['HDV', 'HVD'], true);
     }
