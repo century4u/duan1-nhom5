@@ -1,171 +1,122 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home - Hướng dẫn viên</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8f9fa;
-    }
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      transition: all 0.3s ease;
-    }
-    .stat-card {
-      border-radius: 12px;
-      padding: 20px;
-      color: #fff;
-    }
-    .bg-tours { background: #667eea; }
-    .bg-calendar { background: #48bb78; }
-    .bg-reports { background: #f6ad55; }
-    .card-title { font-size: 1.1rem; font-weight: 600; }
-    .upcoming-tour { font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; background-color: #e7f1ff; color: #0a58ca; margin-bottom: 4px; cursor: pointer; }
-    .upcoming-tour:hover { background-color: #cfe2ff; }
-  </style>
-</head>
-<body>
+<?php require_once PATH_VIEW . 'hdv/layouts/header.php'; ?>
 
-<!-- Header -->
-<header class="bg-primary text-white py-3 mb-4">
-  <div class="container d-flex justify-content-between align-items-center">
-    <a class="nav-link" href="<?= BASE_URL ?>?action=hvd">
-    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào, <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User') ?></h1></a>
-    <nav>
-      <a href="<?= BASE_URL ?>?action=hvd/tours" class="btn btn-light btn-sm me-2"><i class="bi bi-compass"></i> Tour</a>
-      <a href="calendar.html" class="btn btn-light btn-sm me-2"><i class="bi bi-calendar3"></i> Lịch làm việc</a>
-      <a href="reports.html" class="btn btn-light btn-sm"><i class="bi bi-file-earmark-text"></i> Báo cáo</a>
-    </nav>
+<div class="flex justify-between items-center mb-8">
+  <div>
+    <h1 class="text-3xl font-bold text-gray-800">Quản lý Tour</h1>
+    <p class="text-gray-500 mt-1">Danh sách tất cả các tour được phân công</p>
   </div>
-</header>
 
-<main class="container">
+  <div class="flex gap-3">
+    <button
+      class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+      <i class="bi bi-filter"></i> Lọc trạng thái
+    </button>
+    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+      <i class="bi bi-download"></i> Xuất báo cáo
+    </button>
+  </div>
+</div>
 
-   <!-- Thống kê nhanh -->
-  <div class="row g-4 mb-4">
-    <a href="<?= BASE_URL ?>?action=hvd/tours&guide_id=<?= urlencode($_GET['guide_id'] ?? ($_SESSION['user_id'] ?? '')) ?>" class="text-decoration-none col-md-4">
-      <div class="stat-card bg-tours card-hover text-center">
-        <div class="card-title"><i class="bi bi-compass"></i> Tour đang phụ trách</div>
-        <div class="display-6 mt-2" id="total-tours"><?= isset($totalTours) ? (int)$totalTours : 0 ?></div>
+<!-- Tour List Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <?php if (empty($assignedTours)): ?>
+    <div class="col-span-3 text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+      <div class="inline-block p-4 rounded-full bg-gray-50 mb-4">
+        <i class="bi bi-inbox text-4xl text-gray-400"></i>
       </div>
-    </a>
-    <div class="col-md-4">
-      <div class="stat-card bg-calendar card-hover text-center">
-        <div class="card-title"><i class="bi bi-calendar3"></i> Lịch sắp tới</div>
-        <div class="display-6 mt-2" id="upcoming-days"><?= isset($upcomingTours) ? count($upcomingTours) : 0 ?></div>
-      </div>
+      <h3 class="text-lg font-medium text-gray-900">Chưa có tour phân công</h3>
+      <p class="text-gray-500 mt-1">Hiện tại bạn chưa được phân công tour nào.</p>
     </div>
-    <div class="col-md-4">
-      <div class="stat-card bg-reports card-hover text-center">
-        <div class="card-title"><i class="bi bi-file-earmark-text"></i> Báo cáo chưa nộp</div>
-        <div class="display-6 mt-2" id="pending-reports"><?= isset($pendingReports) ? (int)$pendingReports : 0 ?></div>
-      </div>
-    </div>
-  </div><main class="container mt-4">
-  <h2 class="mb-3">Danh sách tour được phân công</h2>
+  <?php else: ?>
+    <?php foreach ($assignedTours as $item):
+      $tour = $item['tour'];
+      $history = $item['history'];
+      $today = date('Y-m-d');
+      $startDate = $history['start_date'];
+      $endDate = $history['end_date'];
+      $dbStatus = $history['status'] ?? '';
 
-  <?php if (!empty($assignedTours)): ?>
-    <?php foreach ($assignedTours as $idx => $item):
-      $h = $item['history'];
-      $t = $item['tour'];
-      $schedules = $item['schedules'] ?? [];
-      $participants = $item['participants'] ?? [];
-      $collapseId = 'tourDetail' . ($t['id'] ?? $idx);
-    ?>
-      <div class="card mb-3">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h5 class="mb-1"><?= htmlspecialchars($t['name'] ?? $t['tour_name'] ?? '') ?></h5>
-              <div class="text-muted small"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($t['departure_location'] ?? '') ?> → <?= htmlspecialchars($t['destination'] ?? '') ?></div>
-              <div class="text-muted small">Thời gian: <?= htmlspecialchars($h['start_date'] ?? '-') ?> → <?= htmlspecialchars($h['end_date'] ?? '-') ?></div>
+      if ($dbStatus === 'completed') {
+        $displayStatus = 'completed';
+      } elseif ($endDate < $today) {
+        $displayStatus = 'past';
+      } elseif ($startDate <= $today && $endDate >= $today) {
+        $displayStatus = 'ongoing';
+      } else {
+        $displayStatus = 'upcoming';
+      }
+
+      $statusColors = [
+        'upcoming' => 'bg-blue-100 text-blue-700',
+        'ongoing' => 'bg-yellow-100 text-yellow-800',
+        'completed' => 'bg-green-100 text-green-700',
+        'past' => 'bg-gray-100 text-gray-600',
+        'cancelled' => 'bg-red-100 text-red-700',
+      ];
+      $statusLabels = [
+        'upcoming' => 'Chưa diễn ra',
+        'ongoing' => 'Đang diễn ra',
+        'completed' => 'Đã hoàn thành',
+        'past' => 'Đã qua',
+        'cancelled' => 'Đã hủy',
+      ];
+      ?>
+      <div class="tour-card bg-white rounded-xl p-6 flex flex-col h-full relative group">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold <?= $statusColors[$displayStatus] ?? 'bg-gray-100' ?>">
+            <?= $statusLabels[$displayStatus] ?? $displayStatus ?>
+          </span>
+          <span class="text-sm font-mono text-gray-500">ID: #<?= $tour['id'] ?></span>
+        </div>
+
+        <h3
+          class="font-bold text-lg mb-2 text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[56px]">
+          <?= htmlspecialchars($tour['name']) ?>
+        </h3>
+
+        <div class="space-y-3 text-sm text-gray-600 mb-6 flex-grow">
+          <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+              <i class="bi bi-calendar3"></i>
             </div>
-            <div class="text-end">
-              <button class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#<?= $collapseId ?>">Xem chi tiết</button>
+            <div>
+              <div class="text-xs text-gray-500">Thời gian</div>
+              <div class="font-medium"><?= date('d/m/Y', strtotime($history['start_date'])) ?> -
+                <?= date('d/m/Y', strtotime($history['end_date'])) ?>
+              </div>
             </div>
           </div>
 
-          <?php if (!empty($h)): ?>
-            <div class="alert alert-info mt-3">
-              <strong>Phân công cho bạn:</strong>
-              <div>Thời gian: <?= htmlspecialchars($h['start_date'] ?? '-') ?> → <?= htmlspecialchars($h['end_date'] ?? '-') ?></div>
-              <?php if (!empty($h['notes'])): ?><div class="mt-1">Ghi chú: <?= nl2br(htmlspecialchars($h['notes'])) ?></div><?php endif; ?>
+          <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600">
+              <i class="bi bi-geo-alt"></i>
             </div>
-          <?php endif; ?>
+            <div>
+              <div class="text-xs text-gray-500">Khởi hành</div>
+              <div class="font-medium"><?= htmlspecialchars($tour['departure_location'] ?? 'Hà Nội') ?></div>
+            </div>
+          </div>
 
-          <div class="collapse mt-3" id="<?= $collapseId ?>">
-            <div class="card card-body">
-              <?php if (!empty($h['notes'])): ?>
-                <div class="mb-2"><strong>Nhiệm vụ/Ghi chú của bạn:</strong>
-                  <div class="text-muted small" style="white-space:pre-line"><?= nl2br(htmlspecialchars($h['notes'])) ?></div>
-                </div>
-              <?php endif; ?>
-
-              <div class="mb-3">
-                <h6 class="mb-2">Lịch trình chi tiết</h6>
-                <?php if (!empty($schedules)): ?>
-                  <?php foreach ($schedules as $sched): ?>
-                    <div class="mb-2">
-                      <div class="d-flex justify-content-between">
-                        <div><strong>Ngày <?= htmlspecialchars($sched['day_number'] ?? '-') ?></strong> <?= !empty($sched['date']) ? ' - ' . htmlspecialchars($sched['date']) : '' ?></div>
-                        <div class="text-muted small"><?= htmlspecialchars($sched['transport'] ?? '') ?></div>
-                      </div>
-                      <div class="fw-semibold"><?= htmlspecialchars($sched['title'] ?? '') ?></div>
-                      <?php if (!empty($sched['description'])): ?><div class="text-muted small mb-1" style="white-space:pre-line"><?= nl2br(htmlspecialchars($sched['description'])) ?></div><?php endif; ?>
-
-                      <?php if (!empty($sched['activities_array'])): ?>
-                        <div class="text-muted small">Hoạt động:</div>
-                        <ul class="small mb-1">
-                          <?php foreach ($sched['activities_array'] as $act): ?>
-                            <li><?= htmlspecialchars(is_string($act) ? $act : json_encode($act)) ?></li>
-                          <?php endforeach; ?>
-                        </ul>
-                      <?php endif; ?>
-
-                      <div class="text-muted small">Ăn ở: <?= htmlspecialchars($sched['meals'] ?? '-') ?> | Lưu trú: <?= htmlspecialchars($sched['accommodation'] ?? '-') ?></div>
-                    </div>
-                    <hr />
-                  <?php endforeach; ?>
-                <?php else: ?>
-                  <div class="text-muted">Chưa có lịch trình chi tiết.</div>
-                <?php endif; ?>
-              </div>
-
-              <div>
-                <h6 class="mb-2">Danh sách khách / Nhiệm vụ cụ thể</h6>
-                <?php if (!empty($participants)): ?>
-                  <div class="small">
-                    <?php foreach ($participants as $pb): 
-                      $b = $pb['booking'];
-                      $details = $pb['details'];
-                    ?>
-                      <div class="mb-2">
-                        <div><strong>Người đặt:</strong> <?= htmlspecialchars($b['contact_name'] ?? '-') ?></div>
-                        <div class="text-muted small">Số khách: <?= count($details) ?> | Email: <?= htmlspecialchars($b['contact_email'] ?? '-') ?> | Điện thoại: <?= htmlspecialchars($b['contact_phone'] ?? '-') ?></div>
-                      </div>
-                    <?php endforeach; ?>
-                  </div>
-                <?php else: ?>
-                  <div class="text-muted small">Chưa có khách đăng ký.</div>
-                <?php endif; ?>
-              </div>
-
+          <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+              <i class="bi bi-people"></i>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500">Số lượng khách</div>
+              <div class="font-medium"><?= count($item['participants']) ?> người</div>
             </div>
           </div>
         </div>
+
+        <div class="pt-4 border-t border-gray-100 grid grid-cols-2 gap-3">
+          <a href="<?= BASE_URL ?>?action=hvd/tours/show&id=<?= $tour['id'] ?>&guide_id=<?= $guideId ?? '' ?>"
+            class="col-span-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-center hover:bg-blue-700 font-medium transition-colors shadow-sm hover:shadow-md">
+            Xem chi tiết
+          </a>
+        </div>
       </div>
     <?php endforeach; ?>
-  <?php else: ?>
-    <div class="alert alert-info">Không có tour nào được phân công.</div>
   <?php endif; ?>
+</div>
 
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php require_once PATH_VIEW . 'hdv/layouts/footer.php'; ?>

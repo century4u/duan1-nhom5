@@ -1,134 +1,223 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home - Hướng dẫn viên</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8f9fa;
-    }
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      transition: all 0.3s ease;
-    }
-    .stat-card {
-      border-radius: 12px;
-      padding: 20px;
-      color: #fff;
-    }
-    .bg-tours { background: #667eea; }
-    .bg-calendar { background: #48bb78; }
-    .bg-reports { background: #f6ad55; }
-    .card-title { font-size: 1.1rem; font-weight: 600; }
-    .upcoming-tour { font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; background-color: #e7f1ff; color: #0a58ca; margin-bottom: 4px; cursor: pointer; }
-    .upcoming-tour:hover { background-color: #cfe2ff; }
-  </style>
-</head>
-<body>
+<?php require_once PATH_VIEW . 'hdv/layouts/header.php'; ?>
 
-<!-- Header -->
-<header class="bg-primary text-white py-3 mb-4">
-  <div class="container d-flex justify-content-between align-items-center">
-    <a class="nav-link" href="<?= BASE_URL ?>?action=hvd">
-    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào, <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User') ?></h1></a>
-    <nav>
-      <a href="<?= BASE_URL ?>?action=hvd/tourss" class="btn btn-light btn-sm me-2"><i class="bi bi-compass"></i>Tổng Tour</a>
-      <a href="calendar.html" class="btn btn-light btn-sm me-2"><i class="bi bi-calendar3"></i> Lịch làm việc</a>
-      <a href="reports.html" class="btn btn-light btn-sm"><i class="bi bi-file-earmark-text"></i> Báo cáo</a>
-    </nav>
-  </div>
-</header>
+<h1 class="text-3xl font-bold mb-8 text-gray-800">Thông tin tổng quan</h1>
 
-<main class="container">
-
-  <!-- Thống kê nhanh -->
-  <div class="row g-4 mb-4">
-    <a href="<?= BASE_URL ?>?action=hvd/tours&guide_id=<?= urlencode($_GET['guide_id'] ?? ($_SESSION['user_id'] ?? '')) ?>" class="text-decoration-none col-md-4">
-      <div class="stat-card bg-tours card-hover text-center">
-        <div class="card-title"><i class="bi bi-compass"></i> Tour đang phụ trách</div>
-        <div class="display-6 mt-2" id="total-tours"><?= isset($totalTours) ? (int)$totalTours : 0 ?></div>
-      </div>
-    </a>
-    <div class="col-md-4">
-      <div class="stat-card bg-calendar card-hover text-center">
-        <div class="card-title"><i class="bi bi-calendar3"></i> Lịch sắp tới</div>
-        <div class="display-6 mt-2" id="upcoming-days"><?= isset($upcomingTours) ? count($upcomingTours) : 0 ?></div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="stat-card bg-reports card-hover text-center">
-        <div class="card-title"><i class="bi bi-file-earmark-text"></i> Báo cáo chưa nộp</div>
-        <div class="display-6 mt-2" id="pending-reports"><?= isset($pendingReports) ? (int)$pendingReports : 0 ?></div>
-      </div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+  <!-- 1. Đang diễn ra -->
+  <div onclick="filterTours('ongoing')"
+    class="cursor-pointer p-6 rounded-xl text-white shadow-lg transform hover:scale-105 transition-transform duration-200"
+    style="background: linear-gradient(135deg, #F59E0B, #FBBF24);">
+    <p class="text-yellow-100 mb-1">Đang diễn ra</p>
+    <p class="text-3xl font-bold">
+      <?php
+      $ongoingCount = 0;
+      $today = date('Y-m-d');
+      foreach ($assignedTours as $t) {
+        $startDate = $t['history']['start_date'] ?? '2999-01-01';
+        $endDate = $t['history']['end_date'] ?? '1970-01-01';
+        $status = $t['history']['status'] ?? '';
+        if ($status !== 'completed' && $startDate <= $today && $endDate >= $today) {
+          $ongoingCount++;
+        }
+      }
+      echo $ongoingCount;
+      ?>
+    </p>
+    <div class="mt-4 text-sm text-yellow-100 flex justify-between items-center">
+      <span>Hiện tại</span>
+      <i class="bi bi-play-circle text-xl"></i>
     </div>
   </div>
 
-  <!-- Lịch làm việc sắp tới -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-white">
-      <h3 class="h5 mb-0"><i class="bi bi-clock-history"></i> Tour sắp tới</h3>
+  <!-- 2. Sắp diễn ra -->
+  <div onclick="filterTours('upcoming')"
+    class="cursor-pointer p-6 rounded-xl text-white shadow-lg transform hover:scale-105 transition-transform duration-200"
+    style="background: linear-gradient(135deg, #1E40AF, #3B82F6 );">
+    <p class="text-green-100 mb-1">Sắp diễn ra</p>
+    <p class="text-3xl font-bold">
+      <?php
+      $upcomingCount = 0;
+      foreach ($assignedTours as $t) {
+        $startDate = $t['history']['start_date'] ?? '1970-01-01';
+        if ($startDate > $today) {
+          $upcomingCount++;
+        }
+      }
+      echo $upcomingCount;
+      ?>
+    </p>
+    <div class="mt-4 text-sm text-green-200 flex justify-between items-center">
+      <span>Trong tương lai</span>
+      <i class="bi bi-calendar-check text-xl"></i>
     </div>
-    <div class="card-body" id="upcoming-tours">
-      <?php if (!empty($upcomingTours)): ?>
-        <?php foreach ($upcomingTours as $t): ?>
-          <a href="<?= BASE_URL ?>?action=hvd/tours/show&id=<?= htmlspecialchars($t['id'] ?? $t['tour_id'] ?? '') ?>&guide_id=<?= urlencode($_GET['guide_id'] ?? ($_SESSION['user_id'] ?? '')) ?>" class="text-decoration-none text-reset">
-          <div class="card mb-3" style="cursor:pointer;">
-            <div class="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="mb-1"><?= htmlspecialchars($t['name'] ?? $t['tour_name'] ?? '') ?></h6>
-                <p class="text-muted small mb-0"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($t['destination'] ?? ($t['departure_location'] ?? '-')) ?></p>
-                <div class="text-muted small">Thời gian: <?= htmlspecialchars($t['duration'] ?? '-') ?></div>
-              </div>
-              <div class="text-end">
-                <?php
-                  $statusLabel = '';
-                  if (isset($t['status'])) {
-                      $statusLabel = ($t['status'] == 0) ? 'Sắp diễn ra' : $t['status'];
-                  }
-                ?>
-                <span class="badge bg-primary"><?= htmlspecialchars($statusLabel) ?></span>
-                <div class="text-muted small">Giá: <?= isset($t['price']) ? number_format($t['price'], 0, ',', '.') . ' ₫' : '-' ?></div>
-                <?php
-                  // Nếu controller đã chuẩn bị sẵn booked_participants thì dùng, nếu không thì tính bằng model
-                  $bookedCount = $t['booked_participants'] ?? null;
-                  if ($bookedCount === null) {
-                      // Tính tạm ở view (fallback) — tốt nhất là controller nên cung cấp dữ liệu này
-                      require_once PATH_MODEL . 'BookingModel.php';
-                      $bm = new BookingModel();
-                      $bookedCount = $bm->countParticipantsByTourId($t['id'] ?? $t['tour_id'] ?? 0);
-                  }
-                ?>
-                <div class="text-muted small">Số khách đã đăng ký: <?= htmlspecialchars($bookedCount ?? 0) ?> / <?= htmlspecialchars($t['max_participants'] ?? $t['max_guests'] ?? '-') ?></div>
-              </div>
-            </div>
+  </div>
+
+  <!-- 3. Hoàn thành/Đã qua -->
+  <div onclick="filterTours('completed')"
+    class="cursor-pointer p-6 rounded-xl text-white shadow-lg transform hover:scale-105 transition-transform duration-200"
+    style="background: linear-gradient(135deg, #059669, #10B981);">
+    <p class="text-purple-100 mb-1">Hoàn thành / Đã qua</p>
+    <p class="text-3xl font-bold">
+      <?php
+      $completedCount = 0;
+      foreach ($assignedTours as $t) {
+        $status = $t['history']['status'] ?? '';
+        $endDate = $t['history']['end_date'] ?? '9999-12-31';
+        if ($status === 'completed' || $endDate < $today) {
+          $completedCount++;
+        }
+      }
+      echo $completedCount;
+      ?>
+    </p>
+    <div class="mt-4 text-sm text-purple-200 flex justify-between items-center">
+      <span>Đã kết thúc</span>
+      <i class="bi bi-check-circle text-xl"></i>
+    </div>
+  </div>
+
+  <!-- 4. Tổng phân công -->
+  <div onclick="filterTours('all')"
+    class="cursor-pointer p-6 rounded-xl text-white shadow-lg transform hover:scale-105 transition-transform duration-200"
+    style="background: linear-gradient(135deg, #7C3AED, #8B5CF6);">
+    <p class="text-blue-100 mb-1">Tours được phân công</p>
+    <p class="text-3xl font-bold"><?= count($assignedTours) ?></p>
+    <div class="mt-4 text-sm text-blue-200 flex justify-between items-center">
+      <span>Tổng số</span>
+      <i class="bi bi-briefcase text-xl"></i>
+    </div>
+  </div>
+</div>
+
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-2xl font-bold text-gray-800" id="tourListTitle">Danh sách Tour</h2>
+  <a href="<?= BASE_URL ?>?action=hvd/tours"
+    class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+    Xem tất cả <i class="bi bi-arrow-right"></i>
+  </a>
+</div>
+
+<!-- Tour List Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="tourGrid">
+  <?php if (empty($assignedTours)): ?>
+    <div class="col-span-3 text-center py-10 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">
+      <i class="bi bi-inbox text-4xl mb-3 block"></i>
+      Bạn chưa có tour nào được phân công.
+    </div>
+  <?php else: ?>
+    <?php foreach ($assignedTours as $item):
+      $tour = $item['tour'];
+      $history = $item['history'];
+      $today = date('Y-m-d');
+      $startDate = $history['start_date'];
+      $endDate = $history['end_date'];
+      $dbStatus = $history['status'] ?? ''; // 'completed' or something else
+
+      // Derived Status Logic
+      if ($dbStatus === 'completed') {
+          $displayStatus = 'completed';
+      } elseif ($endDate < $today) {
+          $displayStatus = 'past';
+      } elseif ($startDate <= $today && $endDate >= $today) {
+          $displayStatus = 'ongoing';
+      } else {
+          $displayStatus = 'upcoming';
+      }
+
+      $statusColors = [
+        'upcoming' => 'bg-blue-100 text-blue-700',
+        'ongoing' => 'bg-yellow-100 text-yellow-800', 
+        'completed' => 'bg-green-100 text-green-700', 
+        'past' => 'bg-gray-100 text-gray-600', 
+        'cancelled' => 'bg-red-100 text-red-700',
+      ];
+      $statusLabels = [
+        'upcoming' => 'Chưa diễn ra',
+        'ongoing' => 'Đang diễn ra',
+        'completed' => 'Đã hoàn thành',
+        'past' => 'Đã qua',
+        'cancelled' => 'Đã hủy',
+      ];
+      ?>
+      <div class="tour-card-wrapper" data-status="<?= $displayStatus ?>">
+      <div class="tour-card bg-white rounded-xl p-6 flex flex-col h-full">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold <?= $statusColors[$displayStatus] ?? 'bg-gray-100' ?>">
+            <?= $statusLabels[$displayStatus] ?? $displayStatus ?>
+          </span>
+          <span class="text-xs text-gray-500">ID: #<?= $tour['id'] ?></span>
+        </div>
+
+        <h3 class="font-bold text-lg mb-2 text-gray-800 line-clamp-2 min-h-[56px]">
+          <?= htmlspecialchars($tour['name']) ?>
+        </h3>
+
+        <div class="space-y-3 text-sm text-gray-600 mb-6 flex-grow">
+          <div class="flex items-center gap-2">
+            <i class="bi bi-calendar3 text-blue-500"></i>
+            <span><?= date('d/m/Y', strtotime($history['start_date'])) ?> -
+              <?= date('d/m/Y', strtotime($history['end_date'])) ?></span>
           </div>
+          <div class="flex items-center gap-2">
+            <i class="bi bi-geo-alt text-red-500"></i>
+            <span><?= htmlspecialchars($tour['departure_location'] ?? 'Hà Nội') ?></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="bi bi-people text-purple-500"></i>
+            <span><?= count($item['participants']) ?> khách</span>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100 flex gap-3">
+          <a href="<?= BASE_URL ?>?action=hvd/tours/show&id=<?= $tour['id'] ?>&guide_id=<?= $guideId ?? '' ?>"
+            class="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white text-center hover:bg-blue-700 font-medium transition-colors">
+            Chi tiết
           </a>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <div class="text-muted">Chưa có tour sắp tới</div>
-      <?php endif; ?>
-    </div>
-  </div>
+        </div>
+      </div>
+      </div>
+    <?php endforeach; ?>
+  <?php endif; ?>
+</div>
 
-  <!-- Danh sách tour gần đây -->
-  <div class="card shadow-sm">
-    <div class="card-header bg-white">
-      <h3 class="h5 mb-0"><i class="bi bi-compass"></i> Tour gần đây</h3>
-    </div>
-    <div class="card-body" id="recent-tours">
-      <div class="text-muted">Chưa có tour nào</div>
-    </div>
-  </div>
+<script>
+function filterTours(status) {
+    const cards = document.querySelectorAll('.tour-card-wrapper');
+    const title = document.getElementById('tourListTitle');
+    
+    cards.forEach(card => {
+        const cardStatus = card.getAttribute('data-status');
+        
+        // Show all
+        if (status === 'all') {
+            card.style.display = 'block';
+        } 
+        // Filter logic
+        else if (status === 'completed') {
+            if (cardStatus === 'completed' || cardStatus === 'past') {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        }
+        else {
+            if (cardStatus === status) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        }
+    });
 
-</main>
+    const titles = {
+        'all': 'Danh sách Tour',
+        'ongoing': 'Tour đang diễn ra',
+        'upcoming': 'Tour sắp diễn ra',
+        'completed': 'Tour hoàn thành / đã qua'
+    };
+    if(titles[status]) title.textContent = titles[status];
+}
+</script>
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+<?php require_once PATH_VIEW . 'hdv/layouts/footer.php'; ?>
