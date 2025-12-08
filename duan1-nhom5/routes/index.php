@@ -45,6 +45,8 @@ match ($action) {
     'hvd/customer/update' => (new HvdController)->customerUpdate(),
     'hvd/tours/finish' => (new HvdController)->finishTour(),
     'hvd/schedule' => (new HvdController)->schedule(),
+    'hvd/customers' => (new HvdController)->customers(),
+    'hvd/tours/customers' => (new HvdController)->tourCustomers(),
 
     // HDV Report/Logs
     'hvd/logs' => (new HvdController)->logs(),

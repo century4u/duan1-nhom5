@@ -32,16 +32,17 @@ class BookingDetailModel extends BaseModel
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (booking_id, fullname, gender, birthdate, id_card, passport, hobby, special_requirements, medical_conditions, dietary_restrictions) 
+                (booking_id, fullname, gender, birthdate, phone, id_card, passport, hobby, special_requirements, medical_conditions, dietary_restrictions) 
                 VALUES 
-                (:booking_id, :fullname, :gender, :birthdate, :id_card, :passport, :hobby, :special_requirements, :medical_conditions, :dietary_restrictions)";
-        
+                (:booking_id, :fullname, :gender, :birthdate, :phone, :id_card, :passport, :hobby, :special_requirements, :medical_conditions, :dietary_restrictions)";
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'booking_id' => $data['booking_id'],
             'fullname' => $data['fullname'],
             'gender' => $data['gender'] ?? null,
             'birthdate' => $data['birthdate'] ?? null,
+            'phone' => $data['phone'] ?? null,
             'id_card' => $data['id_card'] ?? null,
             'passport' => $data['passport'] ?? null,
             'hobby' => $data['hobby'] ?? null,
@@ -65,6 +66,7 @@ class BookingDetailModel extends BaseModel
                 'fullname' => $participant['fullname'],
                 'gender' => $participant['gender'] ?? null,
                 'birthdate' => $participant['birthdate'] ?? null,
+                'phone' => $participant['phone'] ?? null,
                 'id_card' => $participant['id_card'] ?? null,
                 'passport' => $participant['passport'] ?? null,
                 'hobby' => $participant['hobby'] ?? null,
@@ -79,12 +81,13 @@ class BookingDetailModel extends BaseModel
     /**
      * Cập nhật chi tiết booking
      */
-public function update($id, $data)
-{
-    $sql = "UPDATE {$this->table} SET 
+    public function update($id, $data)
+    {
+        $sql = "UPDATE {$this->table} SET 
             fullname = :fullname,
             gender = :gender,
             birthdate = :birthdate,
+            phone = :phone,
             id_card = :id_card,
             passport = :passport,
             hobby = :hobby,
@@ -92,20 +95,21 @@ public function update($id, $data)
             dietary_restrictions = :dietary_restrictions
             WHERE id = :id";
 
-    $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
 
-    return $stmt->execute([
-        'id' => $id,
-        'fullname' => $data['fullname'],
-        'gender' => $data['gender'] ?? null,
-        'birthdate' => $data['birthdate'] ?? null,
-        'id_card' => $data['id_card'] ?? null,
-        'passport' => $data['passport'] ?? null,
-        'hobby' => $data['hobby'] ?? null,
-        'special_requirements' => $data['special_requirements'] ?? null,
-        'dietary_restrictions' => $data['dietary_restrictions'] ?? null
-    ]);
-}
+        return $stmt->execute([
+            'id' => $id,
+            'fullname' => $data['fullname'],
+            'gender' => $data['gender'] ?? null,
+            'birthdate' => $data['birthdate'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'id_card' => $data['id_card'] ?? null,
+            'passport' => $data['passport'] ?? null,
+            'hobby' => $data['hobby'] ?? null,
+            'special_requirements' => $data['special_requirements'] ?? null,
+            'dietary_restrictions' => $data['dietary_restrictions'] ?? null
+        ]);
+    }
 
     /**
      * Xóa chi tiết booking

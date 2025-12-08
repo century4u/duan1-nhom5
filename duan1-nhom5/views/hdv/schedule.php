@@ -72,11 +72,6 @@
                     } elseif ($start > date('Y-m-d')) {
                         $status = 'upcoming';
                     }
-
-                    // Priority: Ongoing (Yellow) > Upcoming (Blue) > Completed (Green)
-                    // If multiple tours, usually ongoing or upcoming is more important to know than completed.
-                    // But user request: "đã hoàn thành -> xanh lá".
-                    // Let's adopt a logic: If ANY ongoing -> Yellow. Else if ANY upcoming -> Blue. Else if ANY completed -> Green.
                     if ($status === 'ongoing')
                         $dayStatus = 'ongoing';
                     elseif ($status === 'upcoming' && $dayStatus !== 'ongoing')
