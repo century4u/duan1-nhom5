@@ -48,6 +48,15 @@
                             required>
                     </div>
                     <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                        <input type="text"
+                            class="form-control block w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            id="phone" name="phone" value="<?= htmlspecialchars($customer['phone'] ?? '') ?>">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
                         <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">Giới tính</label>
                         <select
                             class="form-select block w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
@@ -60,6 +69,13 @@
                             <option value="other" <?= ($customer['gender'] ?? '') == 'other' ? 'selected' : '' ?>>Khác
                             </option>
                         </select>
+                    </div>
+                    <div>
+                        <label for="birthdate" class="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
+                        <input type="date"
+                            class="form-control block w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            id="birthdate" name="birthdate"
+                            value="<?= htmlspecialchars($customer['birthdate'] ?? '') ?>">
                     </div>
                 </div>
 

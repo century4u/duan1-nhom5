@@ -224,6 +224,7 @@ class HvdController
             'fullname' => $_POST['fullname'] ?? '',
             'gender' => $_POST['gender'] ?? null,
             'birthdate' => $_POST['birthdate'] ?? null,
+            'phone' => $_POST['phone'] ?? null,
             'id_card' => $_POST['id_card'] ?? null,
             'passport' => $_POST['passport'] ?? null,
             'hobby' => $_POST['hobby'] ?? null,

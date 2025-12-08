@@ -38,7 +38,7 @@
                                 </span>
                                 <div>
                                     <div class="text-sm font-semibold text-gray-800">Booking #<?= $b['id'] ?></div>
-                                    <div class="text-xs text-gray-500"><?= $b['contact_phone'] ?></div>
+                                    <div class="text-xs text-gray-500">Liên hệ: <?= $b['contact_phone'] ?></div>
                                 </div>
                             </div>
                             <?php if ($isCancelled): ?>
@@ -78,6 +78,11 @@
                                                 / <?= $guest['birthdate'] ? date('Y', strtotime($guest['birthdate'])) : '?' ?>
                                             </span>
                                         </div>
+                                        <?php if (!empty($guest['phone'])): ?>
+                                            <div class="text-xs text-blue-600 mb-1 flex items-center gap-1">
+                                                <i class="bi bi-telephone"></i> <?= htmlspecialchars($guest['phone']) ?>
+                                            </div>
+                                        <?php endif; ?>
 
                                         <!-- Notes Display -->
                                         <div class="flex flex-wrap gap-2 text-sm mt-2">
