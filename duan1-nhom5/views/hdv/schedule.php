@@ -22,7 +22,6 @@
 </div>
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-    <!-- Calendar Header -->
     <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
         <?php
         $daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
@@ -32,28 +31,23 @@
         ?>
     </div>
 
-    <!-- Calendar Grid -->
     <div class="grid grid-cols-7 auto-rows-fr">
         <?php
-        // Logic to calculate dates
         $firstDayOfMonth = mktime(0, 0, 0, $month, 1, $year);
         $numberDays = date('t', $firstDayOfMonth);
         $dateComponents = getdate($firstDayOfMonth);
         $dayOfWeek = $dateComponents['wday']; // 0 (Sun) - 6 (Sat)
         
-        // Padding for previous month
         for ($i = 0; $i < $dayOfWeek; $i++) {
             echo '<div class="min-h-[120px] bg-gray-50 border-b border-r border-gray-100"></div>';
         }
 
-        // Days of month
         for ($day = 1; $day <= $numberDays; $day++) {
             $currentDate = sprintf('%04d-%02d-%02d', $year, $month, $day);
             $isToday = ($currentDate === date('Y-m-d'));
 
-            // Find tours for this day
             $daysTours = [];
-            $dayStatus = null; // completed, ongoing, upcoming
+            $dayStatus = null; 
         
             foreach ($assignedTours as $t) {
                 $start = date('Y-m-d', strtotime($t['history']['start_date']));
@@ -63,7 +57,6 @@
                     $daysTours[] = $t;
 
                     $dbStatus = $t['history']['status'] ?? '';
-                    // Infer status for this day
                     $status = '';
                     if ($dbStatus === 'completed' || $end < date('Y-m-d')) {
                         $status = 'completed';
@@ -80,15 +73,13 @@
                         $dayStatus = 'completed';
                 }
             }
-
-            // Map status to colors
             $bgClass = 'bg-white';
             if ($dayStatus === 'ongoing')
-                $bgClass = 'bg-yellow-100'; // Đang diễn ra -> Vàng
+                $bgClass = 'bg-yellow-100'; 
             elseif ($dayStatus === 'upcoming')
-                $bgClass = 'bg-blue-100'; // Sắp diễn ra -> Xanh da trời
+                $bgClass = 'bg-blue-100'; 
             elseif ($dayStatus === 'completed')
-                $bgClass = 'bg-green-100'; // Hoàn thành -> Xanh lá
+                $bgClass = 'bg-green-100'; 
             elseif ($isToday)
                 $bgClass = 'bg-blue-50/50';
 
@@ -108,7 +99,6 @@
                 <div class="space-y-1">
                     <?php foreach ($daysTours as $t):
                         $status = $t['history']['status'] ?? '';
-                        // Keep pills white for contrast against colored backgrounds
                         $pillClass = 'bg-white border text-gray-700 shadow-sm';
                         ?>
                         <a href="<?= BASE_URL ?>?action=hvd/tours/show&id=<?= $t['tour']['id'] ?>&guide_id=<?= $guideId ?>"
@@ -121,13 +111,10 @@
             </div>
             <?php
 
-            // End of week wrap (optional if using grid)
             if (($day + $dayOfWeek) % 7 == 0 && $day != $numberDays) {
-                // New row logic handled by CSS grid automatically
             }
         }
 
-        // Padding for next month
         $remainingDays = 7 - (($numberDays + $dayOfWeek) % 7);
         if ($remainingDays < 7) {
             for ($i = 0; $i < $remainingDays; $i++) {

@@ -3,8 +3,7 @@
 <!-- Breadcrumb/Header -->
 <div class="flex justify-between items-start mb-8">
   <div>
-    <a href="<?= BASE_URL ?>?action=hvd"
-      class="text-gray-500 hover:text-blue-600 mb-2 inline-block text-sm">
+    <a href="<?= BASE_URL ?>?action=hvd" class="text-gray-500 hover:text-blue-600 mb-2 inline-block text-sm">
       <i class="bi bi-arrow-left"></i> Quay lại danh sách
     </a>
     <h1 class="text-3xl font-bold text-gray-800"><?= htmlspecialchars($tour['name'] ?? '') ?></h1>
@@ -61,62 +60,60 @@
   </div>
 <?php endif; ?>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <!-- Left Column: Itinerary -->
-  <div class="md:col-span-2 space-y-6">
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <i class="bi bi-map text-blue-600"></i> Lịch trình chi tiết
-      </h2>
+<!-- Itinerary Section - Full Width -->
+<div class="space-y-6 mb-6">
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+      <i class="bi bi-map text-blue-600"></i> Lịch trình chi tiết
+    </h2>
 
-      <div
-        class="space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
-        <?php if (!empty($schedules)): ?>
-          <?php foreach ($schedules as $sched): ?>
-            <div class="relative pl-12">
-              <div
-                class="absolute left-0 top-1 w-8 h-8 rounded-full bg-blue-100 border-4 border-white flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm z-10">
-                <?= htmlspecialchars($sched['day_number'] ?? '-') ?>
-              </div>
+    <div
+      class="space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+      <?php if (!empty($schedules)): ?>
+        <?php foreach ($schedules as $sched): ?>
+          <div class="relative pl-12">
+            <div
+              class="absolute left-0 top-1 w-8 h-8 rounded-full bg-blue-100 border-4 border-white flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm z-10">
+              <?= htmlspecialchars($sched['day_number'] ?? '-') ?>
+            </div>
 
-              <div class="mb-2">
-                <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Ngày
-                  <?= htmlspecialchars($sched['day_number'] ?? '-') ?></span>
-                <?php if (!empty($sched['date'])): ?>
-                  <span class="text-gray-400 mx-2">•</span>
-                  <span class="text-sm text-gray-500"><?= htmlspecialchars($sched['date']) ?></span>
-                <?php endif; ?>
-              </div>
-
-              <h3 class="text-lg font-bold text-gray-900 mb-2"><?= htmlspecialchars($sched['title'] ?? '') ?></h3>
-
-              <?php if (!empty($sched['description'])): ?>
-                <div class="text-gray-600 text-sm leading-relaxed mb-3 whitespace-pre-line bg-gray-50 p-3 rounded-lg">
-                  <?= nl2br(htmlspecialchars($sched['description'])) ?>
-                </div>
-              <?php endif; ?>
-
-              <?php if (!empty($sched['activities_array'])): ?>
-                <div class="flex flex-wrap gap-2">
-                  <?php foreach ($sched['activities_array'] as $act): ?>
-                    <span
-                      class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      <i class="bi bi-check2"></i>
-                      <?= htmlspecialchars(is_string($act) ? $act : json_encode($act)) ?>
-                    </span>
-                  <?php endforeach; ?>
-                </div>
+            <div class="mb-2">
+              <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Ngày
+                <?= htmlspecialchars($sched['day_number'] ?? '-') ?></span>
+              <?php if (!empty($sched['date'])): ?>
+                <span class="text-gray-400 mx-2">•</span>
+                <span class="text-sm text-gray-500"><?= htmlspecialchars($sched['date']) ?></span>
               <?php endif; ?>
             </div>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <div class="text-gray-500 text-center py-4 pl-8">Chưa có lịch trình chi tiết.</div>
-        <?php endif; ?>
-      </div>
+
+            <h3 class="text-lg font-bold text-gray-900 mb-2"><?= htmlspecialchars($sched['title'] ?? '') ?></h3>
+
+            <?php if (!empty($sched['description'])): ?>
+              <div class="text-gray-600 text-sm leading-relaxed mb-3 whitespace-pre-line bg-gray-50 p-3 rounded-lg">
+                <?= nl2br(htmlspecialchars($sched['description'])) ?>
+              </div>
+            <?php endif; ?>
+
+            <?php if (!empty($sched['activities_array'])): ?>
+              <div class="flex flex-wrap gap-2">
+                <?php foreach ($sched['activities_array'] as $act): ?>
+                  <span
+                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="bi bi-check2"></i>
+                    <?= htmlspecialchars(is_string($act) ? $act : json_encode($act)) ?>
+                  </span>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="text-gray-500 text-center py-4 pl-8">Chưa có lịch trình chi tiết.</div>
+      <?php endif; ?>
     </div>
   </div>
-
-  <!-- Guest List Moved -->
 </div>
+
+
 
 <?php require_once PATH_VIEW . 'hdv/layouts/footer.php'; ?>

@@ -13,7 +13,6 @@
             $tour = $item['tour'];
             $history = $item['history'];
 
-            // Determine status for badge
             $status = $history['status'] ?? '';
             $statusLabel = 'Sắp diễn ra';
             $statusClass = 'bg-blue-100 text-blue-700';
