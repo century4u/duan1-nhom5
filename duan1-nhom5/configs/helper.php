@@ -38,8 +38,9 @@ if (!function_exists('upload_file')) {
             throw new Exception($errorMessages[$file['error']] ?? 'Lỗi không xác định khi upload file!');
         }
 
-        // Tạo thư mục nếu chưa tồn tại
-        $uploadDir = PATH_ASSETS_UPLOADS . $folder;
+        // Tạo (hoặc chuẩn hóa) đường dẫn upload
+        $folder = trim($folder, "/ \\;");
+        $uploadDir = rtrim(PATH_ASSETS_UPLOADS, "/\\") . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR;
         if (!file_exists($uploadDir)) {
             if (!mkdir($uploadDir, 0755, true)) {
                 throw new Exception('Không thể tạo thư mục upload! Kiểm tra quyền ghi.');
@@ -70,12 +71,12 @@ if (!function_exists('upload_file')) {
         // Tạo tên file unique
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         $filename = time() . '-' . uniqid() . '.' . strtolower($extension);
-        $targetFile = $folder . '/' . $filename;
-        $fullPath = PATH_ASSETS_UPLOADS . $targetFile;
+        $relativePath = $folder . '/' . $filename;
+        $fullPath = $uploadDir . $filename;
 
         // Upload file
         if (move_uploaded_file($file['tmp_name'], $fullPath)) {
-            return $targetFile;
+            return str_replace('\\', '/', $relativePath);
         }
 
         throw new Exception('Upload file không thành công! Kiểm tra quyền ghi thư mục.');

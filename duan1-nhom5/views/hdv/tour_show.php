@@ -1,271 +1,119 @@
-<!doctype html>
-<html lang="vi">
+<?php require_once PATH_VIEW . 'hdv/layouts/header.php'; ?>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home - Hướng dẫn viên</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8f9fa;
-    }
-
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-      transition: all 0.3s ease;
-    }
-
-    .stat-card {
-      border-radius: 12px;
-      padding: 20px;
-      color: #fff;
-    }
-
-    .bg-tours {
-      background: #667eea;
-    }
-
-    .bg-calendar {
-      background: #48bb78;
-    }
-
-    .bg-reports {
-      background: #f6ad55;
-    }
-
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-
-    .upcoming-tour {
-      font-size: 0.9rem;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background-color: #e7f1ff;
-      color: #0a58ca;
-      margin-bottom: 4px;
-      cursor: pointer;
-    }
-
-    .upcoming-tour:hover {
-      background-color: #cfe2ff;
-    }
-  </style>
-</head>
-
-<body>
-
-  <!-- Header -->
-  <header class="bg-primary text-white py-3 mb-4">
-    <div class="container d-flex justify-content-between align-items-center">
-      <a class="nav-link" href="<?= BASE_URL ?>?action=hvd">
-        <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào,
-          <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User') ?></h1>
-      </a>
-      <nav>
-        <a href="<?= BASE_URL ?>?action=hvd/tourss" class="btn btn-light btn-sm me-2"><i class="bi bi-compass"></i>Tổng
-          Tour</a>
-        <a href="calendar.html" class="btn btn-light btn-sm me-2"><i class="bi bi-calendar3"></i> Lịch làm việc</a>
-        <a href="reports.html" class="btn btn-light btn-sm"><i class="bi bi-file-earmark-text"></i> Báo cáo</a>
-      </nav>
+<!-- Breadcrumb/Header -->
+<div class="flex justify-between items-start mb-8">
+  <div>
+    <a href="<?= BASE_URL ?>?action=hvd" class="text-gray-500 hover:text-blue-600 mb-2 inline-block text-sm">
+      <i class="bi bi-arrow-left"></i> Quay lại danh sách
+    </a>
+    <h1 class="text-3xl font-bold text-gray-800"><?= htmlspecialchars($tour['name'] ?? '') ?></h1>
+    <div class="flex items-center gap-4 text-sm text-gray-600 mt-2">
+      <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">Mã:
+        <?= htmlspecialchars($tour['code'] ?? '-') ?></span>
+      <span class="flex items-center gap-1"><i class="bi bi-geo-alt"></i>
+        <?= htmlspecialchars($tour['departure_location'] ?? '-') ?></span>
+      <i class="bi bi-arrow-right text-gray-400"></i>
+      <span class="flex items-center gap-1"><i class="bi bi-flag"></i>
+        <?= htmlspecialchars($tour['destination'] ?? '-') ?></span>
     </div>
-  </header>
+  </div>
 
-  <main class="container">
-
-    <!-- Thống kê nhanh -->
-    <div class="row g-4 mb-4">
-      <a href="<?= BASE_URL ?>?action=hvd/tours&guide_id=<?= urlencode($_GET['guide_id'] ?? ($_SESSION['user_id'] ?? '')) ?>"
-        class="text-decoration-none col-md-4">
-        <div class="stat-card bg-tours card-hover text-center">
-          <div class="card-title"><i class="bi bi-compass"></i> Tour đang phụ trách</div>
-          <div class="display-6 mt-2" id="total-tours"><?= isset($totalTours) ? (int) $totalTours : 0 ?></div>
-        </div>
+  <div class="flex gap-3">
+    <a href="<?= BASE_URL ?>?action=hvd/attendance&tour_id=<?= $id ?>&guide_id=<?= $guideId ?>"
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 shadow-sm transition-colors">
+      <i class="bi bi-calendar-check"></i> Điểm danh
+    </a>
+    <a href="<?= BASE_URL ?>?action=hvd/logs&tour_id=<?= $id ?>&guide_id=<?= $guideId ?>"
+      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-sm transition-colors">
+      <i class="bi bi-journal-text"></i> Nhật ký Tour
+    </a>
+    <?php if (($assignment['status'] ?? '') !== 'completed'): ?>
+      <a href="<?= BASE_URL ?>?action=hvd/tours/finish&tour_id=<?= $id ?>&guide_id=<?= $guideId ?>"
+        onclick="return confirm('Bạn có chắc chắn muốn xác nhận hoàn thành tour này? Sau khi hoàn thành, bạn sẽ không thể điểm danh được nữa.');"
+        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 shadow-sm transition-colors">
+        <i class="bi bi-check-circle"></i> Hoàn thành Tour
       </a>
-      <div class="col-md-4">
-        <div class="stat-card bg-calendar card-hover text-center">
-          <div class="card-title"><i class="bi bi-calendar3"></i> Lịch sắp tới</div>
-          <div class="display-6 mt-2" id="upcoming-days"><?= isset($upcomingTours) ? count($upcomingTours) : 0 ?></div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="stat-card bg-reports card-hover text-center">
-          <div class="card-title"><i class="bi bi-file-earmark-text"></i> Báo cáo chưa nộp</div>
-          <div class="display-6 mt-2" id="pending-reports"><?= isset($pendingReports) ? (int) $pendingReports : 0 ?>
-          </div>
-        </div>
-      </div>
-    </div>
+    <?php else: ?>
+      <span
+        class="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg flex items-center gap-2 border border-gray-200 cursor-not-allowed">
+        <i class="bi bi-check-circle-fill"></i> Đã hoàn thành
+      </span>
+    <?php endif; ?>
+  </div>
+</div>
 
-    <main class="container my-4">
-      <div class="d-flex justify-content-between align-items-start mb-3">
-        <div>
-          <h2><?= htmlspecialchars($tour['name'] ?? '') ?></h2>
-          <div class="text-muted">Mã: <?= htmlspecialchars($tour['code'] ?? '-') ?> | Điểm đi:
-            <?= htmlspecialchars($tour['departure_location'] ?? '-') ?> | Điểm đến:
-            <?= htmlspecialchars($tour['destination'] ?? '-') ?></div>
-        </div>
-        <div class="text-end">
-          <a href="<?= BASE_URL ?>?action=hvd/tours&guide_id=<?= urlencode($guideId ?? '') ?>" class="btn btn-link">Quay
-            lại</a>
-        </div>
+<?php if (!empty($assignment)): ?>
+  <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 flex items-start gap-3">
+    <div class="text-blue-600 text-xl"><i class="bi bi-info-circle-fill"></i></div>
+    <div>
+      <h3 class="font-bold text-blue-800">Thông tin phân công</h3>
+      <div class="text-blue-700 text-sm mt-1">
+        Thời gian: <span class="font-medium"><?= htmlspecialchars($assignment['start_date'] ?? '-') ?></span> đến <span
+          class="font-medium"><?= htmlspecialchars($assignment['end_date'] ?? '-') ?></span>
       </div>
-
-      <?php if (!empty($assignment)): ?>
-        <div class="alert alert-info">
-          <strong>Phân công cho bạn:</strong>
-          <div>Thời gian: <?= htmlspecialchars($assignment['start_date'] ?? '-') ?> →
-            <?= htmlspecialchars($assignment['end_date'] ?? '-') ?></div>
-          <?php if (!empty($assignment['notes'])): ?>
-            <div class="mt-1">Ghi chú: <?= nl2br(htmlspecialchars($assignment['notes'])) ?></div><?php endif; ?>
+      <?php if (!empty($assignment['notes'])): ?>
+        <div class="text-blue-600 text-sm mt-2 p-2 bg-blue-100/50 rounded-lg">
+          <?= nl2br(htmlspecialchars($assignment['notes'])) ?>
         </div>
       <?php endif; ?>
+    </div>
+  </div>
+<?php endif; ?>
 
-      <div class="row">
-        <div class="col-md-7">
-          <div class="card mb-3">
-            <div class="card-header">Lịch trình</div>
-            <div class="card-body">
-              <?php if (!empty($schedules)): ?>
-                <?php foreach ($schedules as $sched): ?>
-                  <div class="mb-3">
-                    <h6>Ngày <?= htmlspecialchars($sched['day_number'] ?? '-') ?>
-                      <?= !empty($sched['date']) ? ' - ' . htmlspecialchars($sched['date']) : '' ?></h6>
-                    <div class="fw-semibold"><?= htmlspecialchars($sched['title'] ?? '') ?></div>
-                    <?php if (!empty($sched['description'])): ?>
-                      <div class="text-muted small mb-1" style="white-space:pre-line">
-                        <?= nl2br(htmlspecialchars($sched['description'])) ?></div><?php endif; ?>
-                    <?php if (!empty($sched['activities_array'])): ?>
-                      <div class="text-muted small">Hoạt động:</div>
-                      <ul class="small">
-                        <?php foreach ($sched['activities_array'] as $act): ?>
-                          <li><?= htmlspecialchars(is_string($act) ? $act : json_encode($act)) ?></li><?php endforeach; ?>
-                      </ul>
-                    <?php endif; ?>
-                  </div>
-                <?php endforeach; ?>
-              <?php else: ?>
-                <div class="text-muted">Chưa có lịch trình chi tiết.</div>
+<!-- Itinerary Section - Full Width -->
+<div class="space-y-6 mb-6">
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+      <i class="bi bi-map text-blue-600"></i> Lịch trình chi tiết
+    </h2>
+
+    <div
+      class="space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+      <?php if (!empty($schedules)): ?>
+        <?php foreach ($schedules as $sched): ?>
+          <div class="relative pl-12">
+            <div
+              class="absolute left-0 top-1 w-8 h-8 rounded-full bg-blue-100 border-4 border-white flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm z-10">
+              <?= htmlspecialchars($sched['day_number'] ?? '-') ?>
+            </div>
+
+            <div class="mb-2">
+              <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Ngày
+                <?= htmlspecialchars($sched['day_number'] ?? '-') ?></span>
+              <?php if (!empty($sched['date'])): ?>
+                <span class="text-gray-400 mx-2">•</span>
+                <span class="text-sm text-gray-500"><?= htmlspecialchars($sched['date']) ?></span>
               <?php endif; ?>
             </div>
+
+            <h3 class="text-lg font-bold text-gray-900 mb-2"><?= htmlspecialchars($sched['title'] ?? '') ?></h3>
+
+            <?php if (!empty($sched['description'])): ?>
+              <div class="text-gray-600 text-sm leading-relaxed mb-3 whitespace-pre-line bg-gray-50 p-3 rounded-lg">
+                <?= nl2br(htmlspecialchars($sched['description'])) ?>
+              </div>
+            <?php endif; ?>
+
+            <?php if (!empty($sched['activities_array'])): ?>
+              <div class="flex flex-wrap gap-2">
+                <?php foreach ($sched['activities_array'] as $act): ?>
+                  <span
+                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="bi bi-check2"></i>
+                    <?= htmlspecialchars(is_string($act) ? $act : json_encode($act)) ?>
+                  </span>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
           </div>
-        </div>
-
-        <div class="col-md-5">
-          <div class="card mb-3">
-            <div class="card-header">Thông tin nhanh</div>
-            <div class="card-body">
-              <div class="mb-2"><strong>Giá:</strong>
-                <?= isset($tour['price']) ? number_format($tour['price'], 0, ',', '.') . ' ₫' : '-' ?></div>
-              <div class="mb-2"><strong>Số khách tối đa:</strong>
-                <?= htmlspecialchars($tour['max_participants'] ?? $tour['max_guests'] ?? '-') ?></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <!-- Danh sách khách -->
-<!-- File: tour_show.php - Phần khách tham gia đã được cập nhật -->
-<div class="card">
-    <div class="card-header">Khách tham gia</div>
-    <div class="card-body">
-        <?php if (!empty($participants)): ?>
-            <?php foreach ($participants as $pb): 
-                $b = $pb['booking'];       // Dữ liệu từ bảng bookings
-                $details = $pb['details']; // Dữ liệu từ bảng booking_details
-            ?>
-                <div class="mb-3 border-bottom pb-3">
-                    <!-- Người đặt -->
-                    <div>
-                        <strong>Người đặt:</strong> 
-                        <?= htmlspecialchars($b['contact_name'] ?? '-') ?>
-                    </div>
-
-                    <!-- Email - Điện thoại -->
-                    <div class="text-muted small">
-                        Email: <?= htmlspecialchars($b['contact_email'] ?? '-') ?> 
-                        | Điện thoại: <?= htmlspecialchars($b['contact_phone'] ?? '-') ?>
-                    </div>
-
-                    <!-- Số khách -->
-                    <div class="text-muted small">Số khách: <?= count($details) ?></div>
-
-                    <!-- Nút xem chi tiết khách -->
-                    <button class="btn btn-outline-primary btn-sm mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#customerDetails<?= $b['id'] ?>">
-                        <i class="bi bi-eye"></i> Xem chi tiết khách
-                    </button>
-
-                    <!-- Chi tiết khách (collapse) -->
-                    <div class="collapse mt-2" id="customerDetails<?= $b['id'] ?>">
-                        <div class="card card-body">
-                            <h6 class="mb-3">Thông tin chi tiết khách hàng</h6>
-                            
-                            <?php if (!empty($details)): ?>
-                                <?php foreach ($details as $index => $d): ?>
-                                    <div class="mb-3 <?= $index > 0 ? 'border-top pt-3' : '' ?>">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="fw-semibold">Khách <?= $index + 1 ?>: <?= htmlspecialchars($d['fullname'] ?? '-') ?></div>
-                                            <!-- Nút cập nhật thông tin khách -->
-                                            <a href="<?= BASE_URL ?>?action=hvd/customer/edit&id=<?= $d['id'] ?>&tour_id=<?= $id ?>&guide_id=<?= $guideId ?>" 
-                                               class="btn btn-warning btn-sm">
-                                                <i class="bi bi-pencil"></i> Cập nhật thông tin
-                                            </a>
-                                        </div>
-                                        
-                                        <div class="row small mt-2">
-                                            <div class="col-md-6">
-                                                <div><strong>Thông tin cá nhân:</strong></div>
-                                                <div>Giới tính: <?= htmlspecialchars($d['gender'] ?? '-') ?></div>
-                                                <div>Ngày sinh: <?= htmlspecialchars($d['birthdate'] ?? '-') ?></div>
-                                                <div>CMND/CCCD: <?= htmlspecialchars($d['id_card'] ?? '-') ?></div>
-                                                <div>Passport: <?= htmlspecialchars($d['passport'] ?? '-') ?></div>
-                                            </div>
-                                            
-                                            <div class="col-md-6">
-                                                <div><strong>Thông tin khác:</strong></div>
-                                                <?php if (!empty($d['hobby'])): ?>
-                                                    <div><strong>Ghi chú:</strong></div>
-                                                    <div class="text-muted" style="white-space: pre-line"><?= nl2br(htmlspecialchars($d['hobby'])) ?></div>
-                                                <?php else: ?>
-                                                    <div class="text-muted">Không có thông tin</div>
-                                                <?php endif; ?>
-                                                
-                                                <?php if (!empty($d['special_requirements'])): ?>
-                                                    <div class="mt-2">
-                                                        <strong>Yêu cầu đặc biệt:</strong>
-                                                        <div class="text-muted small" style="white-space: pre-line"><?= nl2br(htmlspecialchars($d['special_requirements'])) ?></div>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                                                                
-                                        <?php if (!empty($d['dietary_restrictions'])): ?>
-                                            <div class="mt-2 alert alert-info small">
-                                                <strong>Hạn chế ăn uống:</strong>
-                                                <div style="white-space: pre-line"><?= nl2br(htmlspecialchars($d['dietary_restrictions'])) ?></div>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <div class="text-muted">Không có thông tin chi tiết khách hàng.</div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="text-muted">Chưa có khách đăng ký.</div>
-        <?php endif; ?>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="text-gray-500 text-center py-4 pl-8">Chưa có lịch trình chi tiết.</div>
+      <?php endif; ?>
     </div>
+  </div>
 </div>
-    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
 
-</html>
+
+<?php require_once PATH_VIEW . 'hdv/layouts/footer.php'; ?>
