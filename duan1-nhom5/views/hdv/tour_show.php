@@ -3,7 +3,7 @@
 <!-- Breadcrumb/Header -->
 <div class="flex justify-between items-start mb-8">
   <div>
-    <a href="<?= BASE_URL ?>?action=hvd/tours&guide_id=<?= urlencode($guideId ?? '') ?>"
+    <a href="<?= BASE_URL ?>?action=hvd"
       class="text-gray-500 hover:text-blue-600 mb-2 inline-block text-sm">
       <i class="bi bi-arrow-left"></i> Quay lại danh sách
     </a>
@@ -116,127 +116,7 @@
     </div>
   </div>
 
-  <!-- Right Column: Info & Guests -->
-  <div class="space-y-6">
-    <!-- Quick Info -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Thông tin nhanh</h3>
-      <div class="space-y-4">
-        <div class="flex justify-between items-center">
-          <span class="text-gray-500 text-sm">Giá tour</span>
-          <span
-            class="font-bold text-green-600"><?= isset($tour['price']) ? number_format($tour['price'], 0, ',', '.') . ' ₫' : '-' ?></span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-gray-500 text-sm">Số khách</span>
-          <?php
-          $totalGuests = 0;
-          if (!empty($participants)) {
-            foreach ($participants as $pb) {
-              $totalGuests += count($pb['details'] ?? []);
-            }
-          }
-          $maxParticipants = $tour['max_participants'] ?? $tour['max_guests'] ?? '-';
-          ?>
-          <span class="font-medium"><?= $totalGuests ?> / <?= htmlspecialchars($maxParticipants) ?></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Guest List -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <div class="flex justify-between items-center mb-4 border-b pb-2">
-        <h3 class="font-bold text-gray-800">Danh sách khách</h3>
-        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full"><?= count($participants) ?>
-          bookings</span>
-      </div>
-
-      <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-        <?php if (!empty($participants)): ?>
-          <?php foreach ($participants as $pb):
-            $b = $pb['booking'];
-            $details = $pb['details'];
-            ?>
-            <div class="bg-gray-50 rounded-lg p-3">
-              <div class="flex justify-between items-start mb-2">
-                <div>
-                  <div class="font-bold text-gray-900"><?= htmlspecialchars($b['contact_name'] ?? '-') ?></div>
-                  <div class="text-xs text-gray-500"><?= count($details) ?> khách</div>
-                </div>
-                <button class="text-blue-600 text-xs font-medium hover:underline" type="button"
-                  onclick="document.getElementById('customerDetails<?= $b['id'] ?>').classList.toggle('hidden')">
-                  Chi tiết
-                </button>
-              </div>
-
-              <div class="text-xs text-gray-500 space-y-1 mb-2">
-                <div class="flex items-center gap-2"><i class="bi bi-envelope"></i>
-                  <?= htmlspecialchars($b['contact_email'] ?? '-') ?></div>
-                <div class="flex items-center gap-2"><i class="bi bi-telephone"></i>
-                  <?= htmlspecialchars($b['contact_phone'] ?? '-') ?></div>
-              </div>
-
-
-              <!-- Collapse Details -->
-              <div class="hidden transition-all duration-300 ease-in-out" id="customerDetails<?= $b['id'] ?>">
-                <div class="space-y-3 mt-3 pt-3 border-t border-gray-200">
-                  <?php if (!empty($details)): ?>
-                    <?php foreach ($details as $index => $d): ?>
-                      <div class="bg-white p-2 rounded shadow-sm border border-gray-100">
-                        <div class="flex justify-between items-center mb-2">
-                          <span class="text-base font-bold text-blue-800">Khách <?= $index + 1 ?>:
-                            <?= htmlspecialchars($d['fullname'] ?? '-') ?></span>
-                          <a href="<?= BASE_URL ?>?action=hvd/customer/edit&id=<?= $d['id'] ?>&tour_id=<?= $id ?>&guide_id=<?= $guideId ?>"
-                            class="text-amber-500 hover:text-amber-700 p-1">
-                            <i class="bi bi-pencil-square text-lg"></i>
-                          </a>
-                        </div>
-                        <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-gray-500 mb-2">
-                          <div>Giới tính: <?= htmlspecialchars($d['gender'] ?? '-') ?></div>
-                          <div>Sinh: <?= htmlspecialchars($d['birthdate'] ?? '-') ?></div>
-                        </div>
-
-                        <!-- Notes Display -->
-                        <div class="space-y-1 text-[11px]">
-                          <?php if (!empty($d['dietary_restrictions'])): ?>
-                            <div
-                              class="flex items-start gap-1 text-red-700 bg-red-50 p-2 rounded border border-red-100 shadow-sm">
-                              <i class="bi bi-exclamation-triangle-fill mt-0.5 text-xs"></i>
-                              <span class="text-xs"><span class="font-bold uppercase">Hạn chế ăn uống:</span>
-                                <?= htmlspecialchars($d['dietary_restrictions']) ?></span>
-                            </div>
-                          <?php endif; ?>
-
-                          <?php if (!empty($d['special_requirements'])): ?>
-                            <div class="flex items-start gap-1 text-amber-700 bg-amber-50 p-1 rounded">
-                              <i class="bi bi-star-fill mt-0.5"></i>
-                              <span><span class="font-bold">Yêu cầu đặc biệt:</span>
-                                <?= htmlspecialchars($d['special_requirements']) ?></span>
-                            </div>
-                          <?php endif; ?>
-
-                          <?php if (!empty($d['hobby'])): ?>
-                            <div class="flex items-start gap-1 text-gray-600 bg-gray-50 p-1 rounded">
-                              <i class="bi bi-sticky-fill mt-0.5"></i>
-                              <span><span class="font-bold">Ghi chú:</span> <?= htmlspecialchars($d['hobby']) ?></span>
-                            </div>
-                          <?php endif; ?>
-                        </div>
-                      </div>
-                    <?php endforeach; ?>
-                  <?php else: ?>
-                    <div class="text-xs text-center text-gray-400">Không có dữ liệu chi tiết</div>
-                  <?php endif; ?>
-                </div>
-              </div>
-            </div>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <div class="text-center py-6 text-gray-400 text-sm">Chưa có khách đăng ký</div>
-        <?php endif; ?>
-      </div>
-    </div>
-  </div>
+  <!-- Guest List Moved -->
 </div>
 
 <?php require_once PATH_VIEW . 'hdv/layouts/footer.php'; ?>

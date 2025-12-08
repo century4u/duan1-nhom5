@@ -6,7 +6,7 @@
             <h3 class="font-bold text-gray-800 flex items-center gap-2">
                 <i class="bi bi-person-gear text-blue-600"></i> Cập nhật thông tin khách hàng
             </h3>
-            <a href="<?= BASE_URL ?>?action=hvd/tours/show&id=<?= $tour_id ?>&guide_id=<?= $guide_id ?>"
+            <a href="<?= BASE_URL ?>?action=hvd/tours/customers&id=<?= $tour_id ?>&guide_id=<?= $guide_id ?>"
                 class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 flex items-center gap-1 transition-colors">
                 <i class="bi bi-arrow-left"></i> Quay lại
             </a>
@@ -115,7 +115,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                    <a href="<?= BASE_URL ?>?action=hvd/tours/show&id=<?= $tour_id ?>&guide_id=<?= $guide_id ?>"
+                    <a href="<?= BASE_URL ?>?action=hvd/tours/customers&id=<?= $tour_id ?>&guide_id=<?= $guide_id ?>"
                         class="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">Hủy</a>
                     <button type="submit"
                         class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm transition-colors">Cập

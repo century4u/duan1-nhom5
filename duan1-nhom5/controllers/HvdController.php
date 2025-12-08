@@ -195,7 +195,7 @@ class HvdController
         $customer = $bookingDetailModel->findById($customerId);
         if (!$customer) {
             $_SESSION['error'] = 'Không tìm thấy thông tin khách hàng!';
-            header('Location: ' . BASE_URL . '?action=hvd/tours/show&id=' . $tour_id . '&guide_id=' . $guide_id);
+            header('Location: ' . BASE_URL . '?action=hvd/tours/customers&id=' . $tour_id . '&guide_id=' . $guide_id);
             exit;
         }
 
@@ -215,7 +215,7 @@ class HvdController
         $currentCustomer = $bookingDetailModel->findById($customerId);
         if (!$currentCustomer) {
             $_SESSION['error'] = 'Không tìm thấy thông tin khách hàng!';
-            header('Location: ' . BASE_URL . '?action=hvd/tours/show&id=' . $tour_id . '&guide_id=' . $guide_id);
+            header('Location: ' . BASE_URL . '?action=hvd/tours/customers&id=' . $tour_id . '&guide_id=' . $guide_id);
             exit;
         }
 
@@ -240,7 +240,7 @@ class HvdController
             $_SESSION['error'] = 'Cập nhật thông tin khách hàng thất bại!';
         }
 
-        header('Location: ' . BASE_URL . '?action=hvd/tours/show&id=' . $tour_id . '&guide_id=' . $guide_id);
+        header('Location: ' . BASE_URL . '?action=hvd/tours/customers&id=' . $tour_id . '&guide_id=' . $guide_id);
         exit;
     }
     public function logs()
@@ -487,9 +487,122 @@ class HvdController
         exit;
     }
 
-    public function schedule()
+    public function customers()
     {
         require_once PATH_MODEL . 'TourModel.php';
+        require_once PATH_MODEL . 'GuideTourHistoryModel.php';
+        require_once PATH_MODEL . 'BookingModel.php';
+        require_once PATH_MODEL . 'BookingDetailModel.php';
+
+        $tourModel = new TourModel();
+        $historyModel = new GuideTourHistoryModel();
+        $bookingModel = new BookingModel();
+        $bookingDetailModel = new BookingDetailModel();
+
+        $guideId = $_GET['guide_id'] ?? ($_SESSION['user_id'] ?? 0);
+
+        // Fetch assigned tours
+        $histories = $historyModel->getByGuideId($guideId);
+        $assignedTours = [];
+
+        foreach ($histories as $h) {
+            $tour = $tourModel->findById($h['tour_id']);
+            if ($tour) {
+                // Calculate guest count
+                $bookings = $bookingModel->getAll(['tour_id' => $tour['id']]);
+                $guestCount = 0;
+                $specialNeedsCount = 0;
+
+                foreach ($bookings as $b) {
+                    if (($b['status'] ?? '') === 'cancelled')
+                        continue;
+                    $details = $bookingDetailModel->getByBookingId($b['id']);
+                    $guestCount += count($details);
+
+                    // Count special needs
+                    foreach ($details as $d) {
+                        if (!empty($d['dietary_restrictions']) || !empty($d['special_requirements']) || !empty($d['hobby'])) {
+                            $specialNeedsCount++;
+                        }
+                    }
+                }
+
+                $tour['real_guest_count'] = $guestCount;
+                $tour['special_needs_count'] = $specialNeedsCount;
+
+                $assignedTours[] = ['tour' => $tour, 'history' => $h];
+            }
+        }
+
+        // Sort: Ongoing -> Upcoming -> Completed
+        usort($assignedTours, function ($a, $b) {
+            $statusA = $a['history']['status'] ?? '';
+            $statusB = $b['history']['status'] ?? '';
+
+            // Define priority: ongoing > upcoming > others
+            $today = date('Y-m-d');
+
+            $isOngoingA = ($statusA !== 'completed' && ($a['history']['start_date'] ?? '') <= $today && ($a['history']['end_date'] ?? '') >= $today) ? 1 : 0;
+            $isOngoingB = ($statusB !== 'completed' && ($b['history']['start_date'] ?? '') <= $today && ($b['history']['end_date'] ?? '') >= $today) ? 1 : 0;
+
+            if ($isOngoingA !== $isOngoingB)
+                return $isOngoingB - $isOngoingA; // Descending
+
+            return strcmp($b['history']['start_date'] ?? '', $a['history']['start_date'] ?? '');
+        });
+
+        require_once PATH_VIEW . 'hdv/customers.php';
+    }
+
+    public function tourCustomers()
+    {
+        require_once PATH_MODEL . 'TourModel.php';
+        require_once PATH_MODEL . 'BookingModel.php';
+        require_once PATH_MODEL . 'BookingDetailModel.php';
+        require_once PATH_MODEL . 'GuideTourHistoryModel.php';
+
+        $tourModel = new TourModel();
+        $bookingModel = new BookingModel();
+        $bookingDetailModel = new BookingDetailModel();
+        $historyModel = new GuideTourHistoryModel();
+
+        $id = $_GET['id'] ?? 0;
+        $guideId = $_GET['guide_id'] ?? ($_SESSION['user_id'] ?? 0);
+
+        $tour = $tourModel->findById($id);
+        if (!$tour) {
+            $_SESSION['error'] = 'Không tìm thấy thông tin tour!';
+            header('Location: ' . BASE_URL . '?action=hvd/customers');
+            exit;
+        }
+
+        // Get participants
+        $bookings = $bookingModel->getAll(['tour_id' => $id]);
+        $participants = [];
+        foreach ($bookings as $b) {
+            // Include cancelled bookings too but mark them? Or filter?
+            // User context: "Manage customers". Usually wants to see everyone or valid ones.
+            // Let's filter cancelled for this management view to reduce noise, unless user specifically asked.
+            // In tour_show we show them. Let's show them here too for consistency, with visual indicator.
+            $details = $bookingDetailModel->getByBookingId($b['id']);
+            $participants[] = ['booking' => $b, 'details' => $details];
+        }
+
+        // Get assignment info for status check
+        $assignment = null;
+        $histories = $historyModel->getByGuideId($guideId);
+        foreach ($histories as $h) {
+            if ((int) $h['tour_id'] === (int) $id) {
+                $assignment = $h;
+                break;
+            }
+        }
+
+        require_once PATH_VIEW . 'hdv/tour_customers.php';
+    }
+
+    public function schedule()
+    {
         require_once PATH_MODEL . 'GuideTourHistoryModel.php';
 
         $tourModel = new TourModel();

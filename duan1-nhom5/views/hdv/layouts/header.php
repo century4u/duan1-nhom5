@@ -141,11 +141,12 @@
                 class="menu-item <?= $action == 'hvd' || $action == 'hvd/home' ? 'active' : '' ?>">
                 <i class="bi bi-grid-fill"></i> Quản lí tours
             </a>
-            <a href="<?= BASE_URL ?>?action=hvd/schedule" 
+            <a href="<?= BASE_URL ?>?action=hvd/schedule"
                 class="menu-item <?= $action == 'hvd/schedule' ? 'active' : '' ?>">
                 <i class="bi bi-calendar-event-fill"></i> Lịch Làm Việc
             </a>
-            <a href="#" class="menu-item">
+            <a href="<?= BASE_URL ?>?action=hvd/customers"
+                class="menu-item <?= strpos($action, 'hvd/customers') === 0 ? 'active' : '' ?>">
                 <i class="bi bi-people-fill"></i> Khách Hàng
             </a>
         </div>
