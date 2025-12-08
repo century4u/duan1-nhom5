@@ -51,7 +51,7 @@ class BookingModel extends BaseModel
     public function findById($id)
     {
         $sql = "SELECT b.*, t.name as tour_name, t.code as tour_code, t.duration, t.departure_location, t.destination,
-                       t.max_participants, u.full_name as customer_name, u.email as customer_email, u.phone as customer_phone
+                       t.max_participants, u.full_name as customer_name, u.email as customer_email
                 FROM {$this->table} b
                 LEFT JOIN tours t ON b.tour_id = t.id
                 LEFT JOIN users u ON b.user_id = u.id
@@ -67,14 +67,16 @@ class BookingModel extends BaseModel
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (user_id, tour_id, booking_date, total_price, status) 
+                (user_id, tour_id, departure_schedule_id, guide_id, booking_date, total_price, status) 
                 VALUES 
-                (:user_id, :tour_id, :booking_date, :total_price, :status)";
+                (:user_id, :tour_id, :departure_schedule_id, :guide_id, :booking_date, :total_price, :status)";
 
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'user_id' => $data['user_id'] ?? null,
             'tour_id' => $data['tour_id'],
+            'departure_schedule_id' => $data['departure_schedule_id'] ?? null,
+            'guide_id' => $data['guide_id'] ?? null,
             'booking_date' => $data['booking_date'] ?? date('Y-m-d H:i:s'),
             'total_price' => $data['total_price'],
             'status' => $data['status'] ?? 'pending'

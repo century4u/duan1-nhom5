@@ -49,15 +49,21 @@
                             <option value="">-- Chọn lịch khởi hành --</option>
                             <?php foreach ($schedules ?? [] as $s): ?>
                                 <option value="<?= $s['id'] ?>" <?= (isset($_GET['departure_schedule_id']) && $_GET['departure_schedule_id'] == $s['id']) ? 'selected' : '' ?>>
-                                    <?= date('d/m/Y H:i', strtotime($s['departure_date'] . ' ' . $s['departure_time'])) ?> - <?= htmlspecialchars($s['meeting_point']) ?>
+                                    <?= date('d/m/Y H:i', strtotime($s['departure_date'] . ' ' . $s['departure_time'])) ?> -
+                                    <?= htmlspecialchars($s['meeting_point']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
-                        <div>
-                            <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">Lọc</button>
+                            <button type="submit" name="export" value="1"
+                                formaction="<?= BASE_URL ?>?action=tour-customers/export"
+                                class="btn btn-outline-success" title="Xuất Excel/CSV">
+                                <i class="bi bi-file-earmark-excel"></i> Xuất
+                            </button>
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -74,24 +80,33 @@
     <?php if ($tour || $schedule): ?>
         <!-- Thông tin tour/lịch khởi hành -->
         <div class="card mb-3">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Thông tin Tour</h5>
+                <a href="<?= BASE_URL ?>?action=tour-customers/show&tour_id=<?= $tour['id'] ?><?= $schedule ? '&departure_schedule_id=' . $schedule['id'] : '' ?>"
+                    class="btn btn-sm btn-light">
+                    <i class="bi bi-eye"></i> Xem bản in
+                </a>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Tên tour:</strong> <?= htmlspecialchars($tour['name'] ?? 'N/A') ?></p>
                         <p><strong>Mã tour:</strong> <?= htmlspecialchars($tour['code'] ?? 'N/A') ?></p>
-                        <p><strong>Điểm khởi hành:</strong> <?= htmlspecialchars($tour['departure_location'] ?? 'N/A') ?></p>
+                        <p><strong>Điểm khởi hành:</strong> <?= htmlspecialchars($tour['departure_location'] ?? 'N/A') ?>
+                        </p>
                         <p><strong>Điểm đến:</strong> <?= htmlspecialchars($tour['destination'] ?? 'N/A') ?></p>
                     </div>
                     <div class="col-md-6">
                         <?php if ($schedule): ?>
-                            <p><strong>Ngày khởi hành:</strong> <?= date('d/m/Y H:i', strtotime($schedule['departure_date'] . ' ' . $schedule['departure_time'])) ?></p>
+                            <p><strong>Ngày khởi hành:</strong>
+                                <?= date('d/m/Y H:i', strtotime($schedule['departure_date'] . ' ' . $schedule['departure_time'])) ?>
+                            </p>
                             <p><strong>Điểm tập trung:</strong> <?= htmlspecialchars($schedule['meeting_point']) ?></p>
-                            <p><strong>Ngày kết thúc:</strong> <?= date('d/m/Y H:i', strtotime($schedule['end_date'] . ' ' . $schedule['end_time'])) ?></p>
+                            <p><strong>Ngày kết thúc:</strong>
+                                <?= date('d/m/Y H:i', strtotime($schedule['end_date'] . ' ' . $schedule['end_time'])) ?></p>
                         <?php endif; ?>
-                        <p><strong>Tổng số khách:</strong> <span class="badge bg-info"><?= $stats['total'] ?? 0 ?></span></p>
+                        <p><strong>Tổng số khách:</strong> <span class="badge bg-info"><?= $stats['total'] ?? 0 ?></span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -138,7 +153,8 @@
             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Danh sách khách hàng</h5>
                 <?php if ($schedule): ?>
-                    <a href="<?= BASE_URL ?>?action=group-lists/print&id=<?= $schedule['id'] ?>" class="btn btn-light btn-sm" target="_blank">
+                    <a href="<?= BASE_URL ?>?action=group-lists/print&id=<?= $schedule['id'] ?>" class="btn btn-light btn-sm"
+                        target="_blank">
                         <i class="bi bi-printer"></i> In danh sách
                     </a>
                 <?php endif; ?>
@@ -172,7 +188,8 @@
                                             echo $genderLabels[$customer['gender']] ?? 'N/A';
                                             ?>
                                         </td>
-                                        <td><?= $customer['birthdate'] ? date('d/m/Y', strtotime($customer['birthdate'])) : 'N/A' ?></td>
+                                        <td><?= $customer['birthdate'] ? date('d/m/Y', strtotime($customer['birthdate'])) : 'N/A' ?>
+                                        </td>
                                         <td>
                                             <?php
                                             if ($customer['birthdate']) {
@@ -210,8 +227,8 @@
                                         </td>
                                         <td>
                                             <?php if ($schedule): ?>
-                                                <a href="<?= BASE_URL ?>?action=checkins/show&departure_schedule_id=<?= $schedule['id'] ?>" 
-                                                   class="btn btn-sm btn-info">Check-in</a>
+                                                <a href="<?= BASE_URL ?>?action=checkins/show&departure_schedule_id=<?= $schedule['id'] ?>"
+                                                    class="btn btn-sm btn-info">Check-in</a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -232,11 +249,40 @@
 </div>
 
 <script>
-function loadSchedules(tourId) {
-    if (!tourId) {
-        document.getElementById('departure_schedule_id').innerHTML = '<option value="">-- Chọn lịch khởi hành --</option>';
-        return;
+    function loadSchedules(tourId) {
+        const scheduleSelect = document.getElementById('departure_schedule_id');
+
+        if (!tourId) {
+            scheduleSelect.innerHTML = '<option value="">-- Chọn lịch khởi hành --</option>';
+            return;
+        }
+
+        scheduleSelect.disabled = true;
+        scheduleSelect.innerHTML = '<option value="">Đang tải...</option>';
+
+        fetch(`<?= BASE_URL ?>?action=tour-customers/get-schedules&tour_id=${tourId}`)
+            .then(response => response.json())
+            .then(data => {
+                let html = '<option value="">-- Chọn lịch khởi hành --</option>';
+                if (data && data.length > 0) {
+                    data.forEach(schedule => {
+                        // Format date/time string
+                        const date = new Date(schedule.departure_date + ' ' + schedule.departure_time);
+                        const dateStr = date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+                        html += `<option value="${schedule.id}">${dateStr} - ${schedule.meeting_point}</option>`;
+                    });
+                } else {
+                    html = '<option value="">Không có lịch khởi hành</option>';
+                }
+                scheduleSelect.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                scheduleSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+            })
+            .finally(() => {
+                scheduleSelect.disabled = false;
+            });
     }
-    // TODO: Load schedules via AJAX
-}
 </script>

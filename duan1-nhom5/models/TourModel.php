@@ -16,16 +16,13 @@ class TourModel extends BaseModel
 
         $params = [];
 
-        // Lọc theo category
-        if (!empty($filters['category'])) {
-            $sql .= " AND t.category = :category";
-            $params['category'] = $filters['category'];
-        }
-
         // Lọc theo status
         if (isset($filters['status'])) {
             $sql .= " AND t.status = :status";
             $params['status'] = $filters['status'];
+        } else {
+            // Mặc định không lấy tour đã xóa (status = 0)
+            $sql .= " AND t.status != 0";
         }
 
         // Tìm kiếm
@@ -49,9 +46,9 @@ class TourModel extends BaseModel
             $stmt->bindValue(':' . $key, $value);
         }
         if (isset($filters['limit'])) {
-            $stmt->bindValue(':limit', (int)$filters['limit'], PDO::PARAM_INT);
+            $stmt->bindValue(':limit', (int) $filters['limit'], PDO::PARAM_INT);
             if (isset($filters['offset'])) {
-                $stmt->bindValue(':offset', (int)$filters['offset'], PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int) $filters['offset'], PDO::PARAM_INT);
             }
         }
         $stmt->execute();
@@ -94,7 +91,7 @@ class TourModel extends BaseModel
                 VALUES 
                 (:name, :code, :category, :description, :duration, :price, :max_participants, 
                  :departure_location, :destination, :image, :status, :created_by)";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'name' => $data['name'],
@@ -135,7 +132,7 @@ class TourModel extends BaseModel
                 image = :image,
                 status = :status
                 WHERE id = :id";
-        
+
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             'id' => $id,
@@ -200,6 +197,22 @@ class TourModel extends BaseModel
         $stmt->execute($params);
         $result = $stmt->fetch();
         return $result['total'] ?? 0;
+    }
+
+    /**
+     * Lấy top tours nổi bật theo danh mục
+     */
+    public function getTopTours($category, $limit = 6)
+    {
+        $sql = "SELECT * FROM {$this->table} 
+                WHERE category = :category AND status = 1 
+                ORDER BY created_at DESC 
+                LIMIT :limit";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':category', $category, PDO::PARAM_STR);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     /**

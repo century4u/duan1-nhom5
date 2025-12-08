@@ -1,200 +1,231 @@
-<div class="col-12">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>?action=checkins">Quản lý Check-in</a></li>
-            <li class="breadcrumb-item active">Chi tiết Check-in</li>
-        </ol>
-    </nav>
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <a href="<?= BASE_URL ?>?action=checkins" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+            </a>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Chi tiết Check-in - <?= htmlspecialchars($tour['name']) ?></h2>
-        <?php if ($schedule): ?>
-            <a href="<?= BASE_URL ?>?action=group-lists/show&id=<?= $schedule['id'] ?>" class="btn btn-secondary">Xem danh sách đoàn</a>
-        <?php endif; ?>
-    </div>
-
-    <?php if (isset($_SESSION['success'])): ?>
-        <div class="alert alert-success alert-dismissible fade show">
-            <?= $_SESSION['success'] ?>
-            <?php unset($_SESSION['success']); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['error'])): ?>
-        <div class="alert alert-danger alert-dismissible fade show">
-            <?= $_SESSION['error'] ?>
-            <?php unset($_SESSION['error']); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <!-- Thông tin tour/lịch khởi hành -->
-    <div class="card mb-3">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Thông tin Tour</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Tên tour:</strong> <?= htmlspecialchars($tour['name']) ?></p>
-                    <p><strong>Mã tour:</strong> <?= htmlspecialchars($tour['code']) ?></p>
-                    <?php if ($schedule): ?>
-                        <p><strong>Ngày khởi hành:</strong> <?= date('d/m/Y H:i', strtotime($schedule['departure_date'] . ' ' . $schedule['departure_time'])) ?></p>
-                        <p><strong>Điểm tập trung:</strong> <?= htmlspecialchars($schedule['meeting_point']) ?></p>
-                    <?php endif; ?>
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0 fw-bold"><?= htmlspecialchars($tour['name']) ?></h4>
+                        <small class="opacity-75">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            <?= formatDateRange($schedule['start_date'] ?? 'N/A', $schedule['end_date'] ?? 'N/A') ?>
+                            | Mã: <?= htmlspecialchars($tour['code']) ?>
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <h5 class="mb-0">Tổng khách: <?= $stats['total'] ?></h5>
+                        <small>Đã check-in: <?= $stats['checked_in'] ?> | Chưa: <?= $stats['pending'] ?></small>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <p><strong>Tổng số khách:</strong> <span class="badge bg-info"><?= $stats['total'] ?></span></p>
-                    <p><strong>Đã check-in:</strong> <span class="badge bg-success"><?= $stats['checked_in'] ?></span></p>
-                    <p><strong>Chưa check-in:</strong> <span class="badge bg-warning"><?= $stats['pending'] ?></span></p>
-                    <p><strong>Vắng mặt:</strong> <span class="badge bg-danger"><?= $stats['absent'] ?></span></p>
-                    <?php if ($stats['late'] > 0): ?>
-                        <p><strong>Đến muộn:</strong> <span class="badge bg-secondary"><?= $stats['late'] ?></span></p>
+
+                <div class="card-body">
+                    <?php if (isset($_SESSION['success'])): ?>
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <?= $_SESSION['success'] ?>
+                            <?php unset($_SESSION['success']); ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                     <?php endif; ?>
+
+                    <?php if (isset($_SESSION['error'])): ?>
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <?= $_SESSION['error'] ?>
+                            <?php unset($_SESSION['error']); ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 5%">#</th>
+                                    <th style="width: 20%">Khách hàng</th>
+                                    <th style="width: 15%">Thông tin cá nhân</th>
+                                    <th style="width: 40%">Trạng thái & Ghi chú</th>
+                                    <th style="width: 20%">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($customers as $index => $customer):
+                                    $checkin = $customer['checkin'] ?? null;
+                                    $status = $checkin['status'] ?? 'pending';
+                                    ?>
+                                    <tr>
+                                        <td><?= $index + 1 ?></td>
+                                        <td>
+                                            <div class="fw-bold fs-5"><?= $customer['fullname'] ?></div>
+                                            <div class="text-muted small">Booking: #<?= $customer['booking_id'] ?></div>
+                                        </td>
+                                        <td>
+                                            <div><i class="bi bi-gender-ambiguous me-1"></i><?= $customer['gender'] ?></div>
+                                            <div><i
+                                                    class="bi bi-calendar3 me-1"></i><?= date('d/m/Y', strtotime($customer['birthdate'])) ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <form method="POST" action="<?= BASE_URL ?>?action=checkins/process"
+                                                id="form-<?= $customer['id'] ?>" class="d-flex flex-column gap-2">
+                                                <input type="hidden" name="booking_detail_id"
+                                                    value="<?= $customer['id'] ?>">
+                                                <input type="hidden" name="departure_schedule_id"
+                                                    value="<?= $schedule['id'] ?>">
+                                                <?php if ($checkin): ?>
+                                                    <input type="hidden" name="id" value="<?= $checkin['id'] ?>">
+                                                    <input type="hidden" name="action_type" value="update">
+                                                <?php endif; ?>
+
+                                                <div class="btn-group w-100" role="group">
+                                                    <input type="radio" class="btn-check" name="status"
+                                                        id="status_checkin_<?= $customer['id'] ?>" value="checked_in"
+                                                        <?= $status == 'checked_in' ? 'checked' : '' ?>>
+                                                    <label class="btn btn-outline-success"
+                                                        for="status_checkin_<?= $customer['id'] ?>">Check-in</label>
+
+                                                    <input type="radio" class="btn-check" name="status"
+                                                        id="status_late_<?= $customer['id'] ?>" value="late"
+                                                        <?= $status == 'late' ? 'checked' : '' ?>>
+                                                    <label class="btn btn-outline-warning"
+                                                        for="status_late_<?= $customer['id'] ?>">Muộn</label>
+
+                                                    <input type="radio" class="btn-check" name="status"
+                                                        id="status_absent_<?= $customer['id'] ?>" value="absent"
+                                                        <?= $status == 'absent' ? 'checked' : '' ?>>
+                                                    <label class="btn btn-outline-danger"
+                                                        for="status_absent_<?= $customer['id'] ?>">Vắng</label>
+                                                </div>
+
+                                                <input type="text" class="form-control form-control-sm mt-2 note-input" name="notes"
+                                                    value="<?= $checkin['notes'] ?? '' ?>" placeholder="Ghi chú...">
+                                            </form>
+                                        </td>
+                                        <td>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <div id="checkin-info-<?= $customer['id'] ?>">
+                                                <?php if ($checkin): ?>
+                                                    <div class="small text-muted mb-1">
+                                                        <i
+                                                            class="bi bi-clock me-1"></i><?= date('H:i d/m/Y', strtotime($checkin['checkin_time'])) ?>
+                                                    </div>
+                                                    <div class="small text-muted">
+                                                        <i
+                                                            class="bi bi-person-check me-1"></i><?= $checkin['checked_by_name'] ?? 'Admin' ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary">Chưa check-in</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Danh sách check-in -->
-    <div class="card">
-        <div class="card-header bg-success text-white">
-            <h5 class="mb-0">Danh sách Check-in</h5>
-        </div>
-        <div class="card-body">
-            <?php if (empty($customers)): ?>
-                <p class="text-center text-muted">Chưa có khách hàng nào.</p>
-            <?php else: ?>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Họ và tên</th>
-                                <th>Giới tính</th>
-                                <th>Ngày sinh</th>
-                                <th>Trạng thái Check-in</th>
-                                <th>Thời gian</th>
-                                <th>Ghi chú</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            $statusLabels = CheckinModel::getStatuses();
-                            $statusColors = [
-                                'pending' => 'warning',
-                                'checked_in' => 'success',
-                                'late' => 'secondary',
-                                'absent' => 'danger',
-                                'cancelled' => 'dark'
-                            ];
-                            foreach ($customers as $index => $customer): 
-                            ?>
-                                <tr>
-                                    <td><?= $index + 1 ?></td>
-                                    <td><strong><?= htmlspecialchars($customer['fullname']) ?></strong></td>
-                                    <td>
-                                        <?php
-                                        $genderLabels = ['male' => 'Nam', 'female' => 'Nữ', 'other' => 'Khác'];
-                                        echo $genderLabels[$customer['gender']] ?? 'N/A';
-                                        ?>
-                                    </td>
-                                    <td><?= $customer['birthdate'] ? date('d/m/Y', strtotime($customer['birthdate'])) : 'N/A' ?></td>
-                                    <td>
-                                        <?php if ($customer['checkin']): ?>
-                                            <?php
-                                            $status = $customer['checkin']['status'];
-                                            $label = $statusLabels[$status] ?? $status;
-                                            $color = $statusColors[$status] ?? 'secondary';
-                                            ?>
-                                            <span class="badge bg-<?= $color ?>"><?= $label ?></span>
-                                        <?php else: ?>
-                                            <span class="badge bg-warning">Chưa check-in</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if ($customer['checkin'] && $customer['checkin']['checkin_time']): ?>
-                                            <?= date('d/m/Y H:i', strtotime($customer['checkin']['checkin_time'])) ?>
-                                        <?php else: ?>
-                                            <span class="text-muted">-</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if ($customer['checkin'] && $customer['checkin']['notes']): ?>
-                                            <small><?= htmlspecialchars($customer['checkin']['notes']) ?></small>
-                                        <?php else: ?>
-                                            <span class="text-muted">-</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-primary" 
-                                                onclick="openCheckinModal(<?= $customer['id'] ?>, '<?= htmlspecialchars($customer['fullname']) ?>', <?= $schedule['id'] ?? 'null' ?>)">
-                                            Check-in
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
         </div>
     </div>
 </div>
 
-<!-- Modal Check-in -->
-<div class="modal fade" id="checkinModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Check-in khách hàng</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="<?= BASE_URL ?>?action=checkins/process">
-                <div class="modal-body">
-                    <input type="hidden" name="booking_detail_id" id="checkin_booking_detail_id">
-                    <input type="hidden" name="departure_schedule_id" value="<?= $schedule['id'] ?? '' ?>">
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Khách hàng</label>
-                        <input type="text" class="form-control" id="checkin_customer_name" readonly>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
-                        <select class="form-select" name="status" id="checkin_status" required>
-                            <?php foreach (CheckinModel::getStatuses() as $key => $label): ?>
-                                <option value="<?= $key ?>"><?= $label ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Ghi chú</label>
-                        <textarea class="form-control" name="notes" id="checkin_notes" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
-                </div>
-            </form>
+<!-- Toast Container for Notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-bell me-2"></i>
+            <strong class="me-auto">Thông báo</strong>
+            <small>Vừa xong</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Cập nhật thành công!
         </div>
     </div>
 </div>
 
 <script>
-function openCheckinModal(bookingDetailId, customerName, scheduleId) {
-    document.getElementById('checkin_booking_detail_id').value = bookingDetailId;
-    document.getElementById('checkin_customer_name').value = customerName;
-    if (scheduleId) {
-        document.querySelector('input[name="departure_schedule_id"]').value = scheduleId;
-    }
-    const modal = new bootstrap.Modal(document.getElementById('checkinModal'));
-    modal.show();
-}
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastEl = document.getElementById('liveToast');
+        const toastBody = toastEl.querySelector('.toast-body');
+        const toast = new bootstrap.Toast(toastEl);
+
+        // Function to send AJAX request
+        function sendUpdate(form) {
+            const formData = new FormData(form);
+            const headers = new Headers();
+            headers.append('X-Requested-With', 'XMLHttpRequest');
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: headers
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastBody.textContent = 'Cập nhật thành công!';
+                    toastEl.classList.remove('text-bg-danger');
+                    toastEl.classList.add('text-bg-success');
+                    toast.show();
+
+                    // Update UI Info Column if needed
+                    const infoDiv = document.getElementById('checkin-info-' + formData.get('booking_detail_id'));
+                    if (data.data && data.data.checkin_time) {
+                        infoDiv.innerHTML = `
+                            <div class="small text-muted mb-1">
+                                <i class="bi bi-clock me-1"></i>${data.data.checkin_time}
+                            </div>
+                            <div class="small text-muted">
+                                <i class="bi bi-person-check me-1"></i>${data.data.checked_by}
+                            </div>
+                        `;
+                    }
+                } else {
+                    toastBody.textContent = 'Lỗi: ' + data.message;
+                    toastEl.classList.remove('text-bg-success');
+                    toastEl.classList.add('text-bg-danger');
+                    toast.show();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastBody.textContent = 'Lỗi kết nối server!';
+                toastEl.classList.remove('text-bg-success');
+                toastEl.classList.add('text-bg-danger');
+                toast.show();
+            });
+        }
+
+        // Handle Radio Changes
+        document.querySelectorAll('input[type=radio][name=status]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                sendUpdate(this.closest('form'));
+            });
+        });
+
+        // Handle Note Blur (Auto Save)
+        document.querySelectorAll('input[name=notes]').forEach(input => {
+            // Helper to track if value changed
+            input.dataset.original = input.value;
+            
+            input.addEventListener('blur', function () {
+                if (this.value !== this.dataset.original) {
+                    this.dataset.original = this.value;
+                    sendUpdate(this.closest('form'));
+                }
+            });
+
+            // Prevent form submission on Enter key for notes
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur(); // Trigger blur to save
+                }
+            });
+        });
+    });
 </script>

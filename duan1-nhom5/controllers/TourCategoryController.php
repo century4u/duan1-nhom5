@@ -14,21 +14,25 @@ class TourCategoryController
      */
     public function index()
     {
-        $categories = TourModel::getCategories();
-        
-        // Lấy thống kê số lượng tour theo từng danh mục
+        // Load cấu hình danh mục từ file config
+        $categoryConfig = require PATH_ROOT . 'configs/tour_categories.php';
+
+        // Lấy thống kê và tours cho mỗi danh mục
         $categoryStats = [];
-        foreach ($categories as $key => $label) {
+        foreach ($categoryConfig as $key => $config) {
             $categoryStats[$key] = [
-                'name' => $label,
+                'name' => $config['label'],
+                'description' => $config['description'],
+                'icon' => $config['icon'],
+                'color' => $config['color'],
                 'count' => $this->tourModel->count(['category' => $key, 'status' => 1]),
-                'description' => $this->getCategoryDescription($key)
+                'tours' => $this->tourModel->getTopTours($key, 8) // 8 tours nổi bật
             ];
         }
 
         $title = 'Quản lý Danh mục Tour';
         $view = 'tour-category/index';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -61,12 +65,12 @@ class TourCategoryController
 
         $filters = [
             'category' => $category,
-            'status' => isset($_GET['status']) ? (int)$_GET['status'] : null,
+            'status' => isset($_GET['status']) ? (int) $_GET['status'] : null,
             'search' => $_GET['search'] ?? ''
         ];
 
         // Loại bỏ các filter rỗng
-        $filters = array_filter($filters, function($value) {
+        $filters = array_filter($filters, function ($value) {
             return $value !== '' && $value !== null;
         });
 
@@ -79,7 +83,7 @@ class TourCategoryController
             ['name' => $categoryName, 'active' => true]
         ];
         $view = 'tour-category/tours';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 }
 

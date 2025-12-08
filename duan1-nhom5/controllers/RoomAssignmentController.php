@@ -30,7 +30,7 @@ class RoomAssignmentController
         ];
 
         // Loại bỏ các filter rỗng
-        $filters = array_filter($filters, function($value) {
+        $filters = array_filter($filters, function ($value) {
             return $value !== '' && $value !== null;
         });
 
@@ -191,8 +191,8 @@ class RoomAssignmentController
 
         if (empty($assignments)) {
             $_SESSION['error'] = 'Vui lòng chọn ít nhất một khách hàng để phân phòng!';
-            header('Location: ' . BASE_URL . '?action=room-assignments/create' . 
-                   ($departureScheduleId ? '&departure_schedule_id=' . $departureScheduleId : '&tour_id=' . $tourId));
+            header('Location: ' . BASE_URL . '?action=room-assignments/create' .
+                ($departureScheduleId ? '&departure_schedule_id=' . $departureScheduleId : '&tour_id=' . $tourId));
             exit;
         }
 
@@ -254,8 +254,8 @@ class RoomAssignmentController
         }
 
         if ($successCount > 0) {
-            $_SESSION['success'] = "Phân phòng thành công {$successCount} khách hàng!" . 
-                                   ($errorCount > 0 ? " ({$errorCount} lỗi)" : '');
+            $_SESSION['success'] = "Phân phòng thành công {$successCount} khách hàng!" .
+                ($errorCount > 0 ? " ({$errorCount} lỗi)" : '');
         } else {
             $_SESSION['error'] = 'Không thể phân phòng! Vui lòng kiểm tra lại thông tin.';
         }
@@ -266,7 +266,7 @@ class RoomAssignmentController
         } elseif ($tourId) {
             $redirectUrl .= '&tour_id=' . $tourId;
         }
-        
+
         header('Location: ' . $redirectUrl);
         exit;
     }
@@ -359,7 +359,7 @@ class RoomAssignmentController
         } elseif ($assignment['tour_id']) {
             $redirectUrl .= '&tour_id=' . $assignment['tour_id'];
         }
-        
+
         header('Location: ' . $redirectUrl);
         exit;
     }
@@ -392,8 +392,117 @@ class RoomAssignmentController
         } elseif ($assignment['tour_id']) {
             $redirectUrl .= '&tour_id=' . $assignment['tour_id'];
         }
-        
+
         header('Location: ' . $redirectUrl);
+        exit;
+    }
+    /**
+     * API: Lấy danh sách lịch khởi hành theo tour (AJAX)
+     */
+    public function getSchedules()
+    {
+        $tourId = $_GET['tour_id'] ?? 0;
+        if (!$tourId) {
+            echo json_encode([]);
+            return;
+        }
+
+        $schedules = $this->departureScheduleModel->getAll(['tour_id' => $tourId]);
+
+        // Format lại dữ liệu cần thiết
+        $data = array_map(function ($schedule) {
+            return [
+                'id' => $schedule['id'],
+                'departure_date' => $schedule['departure_date'],
+                'departure_time' => $schedule['departure_time'],
+                'meeting_point' => $schedule['meeting_point']
+            ];
+        }, $schedules);
+
+        header('Content-Type: application/json');
+        echo json_encode($data);
+    }
+
+    /**
+     * Xuất danh sách phân phòng (Excel/CSV)
+     */
+    public function export()
+    {
+        $tourId = $_GET['tour_id'] ?? 0;
+        $scheduleId = $_GET['departure_schedule_id'] ?? 0;
+
+        $tour = null;
+        $schedule = null;
+        $assignments = [];
+        $customers = [];
+
+        if ($scheduleId) {
+            $schedule = $this->departureScheduleModel->findById($scheduleId);
+            if ($schedule) {
+                $tour = $this->tourModel->findById($schedule['tour_id']);
+                $assignments = $this->roomAssignmentModel->getByDepartureScheduleId($scheduleId);
+                $customers = $this->tourCustomerModel->getByDepartureScheduleId($scheduleId);
+            }
+        } elseif ($tourId) {
+            $tour = $this->tourModel->findById($tourId);
+            if ($tour) {
+                $assignments = $this->roomAssignmentModel->getByTourId($tourId);
+                $customers = $this->tourCustomerModel->getByTourId($tourId);
+            }
+        }
+
+        if (!$tour || empty($assignments)) {
+            $_SESSION['error'] = 'Không có dữ liệu để xuất!';
+            header('Location: ' . BASE_URL . '?action=room-assignments');
+            exit;
+        }
+
+        // Tạo map phân phòng
+        $assignmentMap = [];
+        foreach ($assignments as $assignment) {
+            if ($assignment['booking_detail_id']) {
+                $assignmentMap[$assignment['booking_detail_id']] = $assignment;
+            }
+        }
+
+        // Xuất CSV
+        $filename = 'danh-sach-phong-' . date('Y-m-d') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+
+        // Add BOM for UTF-8 Excel support
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        // Header
+        fputcsv($output, ['STT', 'Họ và tên', 'Giới tính', 'Ngày sinh', 'Khách sạn', 'Số phòng', 'Loại phòng', 'Loại giường', 'Check-in', 'Check-out', 'Ghi chú']);
+
+        $i = 1;
+        foreach ($customers as $customer) {
+            $assignment = $assignmentMap[$customer['id']] ?? null;
+            if (!$assignment)
+                continue; // Chỉ xuất những người đã có phòng
+
+            $gender = $customer['gender'] === 'male' ? 'Nam' : ($customer['gender'] === 'female' ? 'Nữ' : 'Khác');
+
+            fputcsv($output, [
+                $i++,
+                $customer['fullname'],
+                $gender,
+                $customer['birthdate'],
+                $assignment['hotel_name'],
+                $assignment['room_number'],
+                $assignment['room_type'],
+                $assignment['bed_type'],
+                $assignment['checkin_date'],
+                $assignment['checkout_date'],
+                $assignment['notes']
+            ]);
+        }
+
+        fclose($output);
         exit;
     }
 }

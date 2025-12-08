@@ -7,8 +7,6 @@ class TourController
     private $imageModel;
     private $priceModel;
     private $policyModel;
-    private $supplierModel;
-    private $tourSupplierModel;
 
     public function __construct()
     {
@@ -17,8 +15,6 @@ class TourController
         $this->imageModel = new TourImageModel();
         $this->priceModel = new TourPriceModel();
         $this->policyModel = new TourPolicyModel();
-        $this->supplierModel = new SupplierModel();
-        $this->tourSupplierModel = new TourSupplierModel();
     }
 
     /**
@@ -28,12 +24,12 @@ class TourController
     {
         $filters = [
             'category' => $_GET['category'] ?? '',
-            'status' => isset($_GET['status']) ? (int)$_GET['status'] : null,
+            'status' => isset($_GET['status']) ? (int) $_GET['status'] : null,
             'search' => $_GET['search'] ?? ''
         ];
 
         // Loại bỏ các filter rỗng
-        $filters = array_filter($filters, function($value) {
+        $filters = array_filter($filters, function ($value) {
             return $value !== '' && $value !== null;
         });
 
@@ -48,12 +44,16 @@ class TourController
     /**
      * Hiển thị form tạo tour mới
      */
+    /**
+     * Hiển thị form tạo tour mới
+     */
     public function create()
     {
+        requireAdmin();
         $categories = TourModel::getCategories();
         $title = 'Tạo Tour Mới';
         $view = 'tour/create';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -61,6 +61,7 @@ class TourController
      */
     public function store()
     {
+        requireAdmin();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . BASE_URL . '?action=tours');
             exit;
@@ -71,26 +72,17 @@ class TourController
             'code' => $_POST['code'] ?? '',
             'category' => $_POST['category'] ?? '',
             'description' => $_POST['description'] ?? '',
-            'duration' => (int)($_POST['duration'] ?? 0),
-            'price' => (float)($_POST['price'] ?? 0),
-            'max_participants' => !empty($_POST['max_participants']) ? (int)$_POST['max_participants'] : null,
+            'duration' => (int) ($_POST['duration'] ?? 0),
+            'price' => (float) ($_POST['price'] ?? 0),
+            'max_participants' => !empty($_POST['max_participants']) ? (int) $_POST['max_participants'] : null,
             'departure_location' => $_POST['departure_location'] ?? '',
             'destination' => $_POST['destination'] ?? '',
-            'status' => isset($_POST['status']) ? (int)$_POST['status'] : 1,
+            'status' => isset($_POST['status']) ? (int) $_POST['status'] : 1,
             'created_by' => 1 // Default user ID
         ];
 
         // Validate
         $errors = $this->validateTour($data);
-
-        // Xử lý upload ảnh
-        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            try {
-                $data['image'] = upload_file('tours', $_FILES['image']);
-            } catch (Exception $e) {
-                $errors[] = $e->getMessage();
-            }
-        }
 
         // Kiểm tra code đã tồn tại chưa
         if (empty($errors)) {
@@ -107,17 +99,54 @@ class TourController
             exit;
         }
 
+        // Tạo tour trước (không cần image trong data nữa)
+        $data['image'] = null;
         $tourId = $this->tourModel->create($data);
 
-        if ($tourId) {
-            $_SESSION['success'] = 'Tạo tour thành công!';
-            header('Location: ' . BASE_URL . '?action=tours');
-            exit;
-        } else {
+        if (!$tourId) {
             $_SESSION['error'] = 'Có lỗi xảy ra khi tạo tour!';
             header('Location: ' . BASE_URL . '?action=tours/create');
             exit;
         }
+
+        // Xử lý upload nhiều ảnh
+        if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
+            foreach ($_FILES['images']['name'] as $key => $name) {
+                if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
+                    $file = [
+                        'name' => $_FILES['images']['name'][$key],
+                        'type' => $_FILES['images']['type'][$key],
+                        'tmp_name' => $_FILES['images']['tmp_name'][$key],
+                        'error' => $_FILES['images']['error'][$key],
+                        'size' => $_FILES['images']['size'][$key]
+                    ];
+
+                    try {
+                        $imagePath = upload_file('tours', $file);
+                        $this->imageModel->create([
+                            'tour_id' => $tourId,
+                            'image_url' => BASE_ASSETS_UPLOADS . $imagePath,
+                            'image_path' => $imagePath,
+                            'caption' => null,
+                            'is_primary' => ($key === 0) ? 1 : 0, // Ảnh đầu tiên là ảnh chính
+                            'sort_order' => $key
+                        ]);
+
+                        // Cập nhật ảnh chính vào tour (ảnh đầu tiên)
+                        if ($key === 0) {
+                            $this->tourModel->update($tourId, ['image' => $imagePath]);
+                        }
+                    } catch (Exception $e) {
+                        // Log error nhưng không dừng quá trình
+                        error_log("Failed to upload image: " . $e->getMessage());
+                    }
+                }
+            }
+        }
+
+        $_SESSION['success'] = 'Tạo tour thành công!';
+        header('Location: ' . BASE_URL . '?action=tours/show&id=' . $tourId);
+        exit;
     }
 
     /**
@@ -125,6 +154,7 @@ class TourController
      */
     public function edit()
     {
+        requireAdmin();
         $id = $_GET['id'] ?? 0;
         $tour = $this->tourModel->findById($id);
 
@@ -137,7 +167,7 @@ class TourController
         $categories = TourModel::getCategories();
         $title = 'Chỉnh sửa Tour';
         $view = 'tour/edit';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -145,6 +175,7 @@ class TourController
      */
     public function update()
     {
+        requireAdmin();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . BASE_URL . '?action=tours');
             exit;
@@ -164,12 +195,12 @@ class TourController
             'code' => $_POST['code'] ?? '',
             'category' => $_POST['category'] ?? '',
             'description' => $_POST['description'] ?? '',
-            'duration' => (int)($_POST['duration'] ?? 0),
-            'price' => (float)($_POST['price'] ?? 0),
-            'max_participants' => !empty($_POST['max_participants']) ? (int)$_POST['max_participants'] : null,
+            'duration' => (int) ($_POST['duration'] ?? 0),
+            'price' => (float) ($_POST['price'] ?? 0),
+            'max_participants' => !empty($_POST['max_participants']) ? (int) $_POST['max_participants'] : null,
             'departure_location' => $_POST['departure_location'] ?? '',
             'destination' => $_POST['destination'] ?? '',
-            'status' => isset($_POST['status']) ? (int)$_POST['status'] : 1,
+            'status' => isset($_POST['status']) ? (int) $_POST['status'] : 1,
             'image' => $tour['image'] // Giữ nguyên ảnh cũ nếu không upload mới
         ];
 
@@ -233,29 +264,26 @@ class TourController
 
         // Lấy các thông tin chi tiết
         $schedules = $this->scheduleModel->getByTourId($id);
+
+        // Lấy lịch khởi hành (Departure Schedules)
+        $departureScheduleModel = new DepartureScheduleModel();
+        $departureSchedules = $departureScheduleModel->getAll(['tour_id' => $id, 'status' => 'confirmed']); // Lấy lịch đã xác nhận
+
         $images = $this->imageModel->getByTourId($id);
         $prices = $this->priceModel->getByTourId($id);
         $policies = $this->policyModel->getByTourId($id);
-        $suppliers = $this->supplierModel->getByTourId($id);
-        
+
         // Nhóm chính sách theo loại
         $policiesByType = [];
         foreach ($policies as $policy) {
             $policiesByType[$policy['policy_type']][] = $policy;
         }
 
-        // Nhóm nhà cung cấp theo loại
-        $suppliersByType = [];
-        foreach ($suppliers as $supplier) {
-            $type = $supplier['supplier_type'] ?? 'other';
-            $suppliersByType[$type][] = $supplier;
-        }
-
         $categories = TourModel::getCategories();
 
         $title = 'Chi tiết Tour - ' . $tour['name'];
         $view = 'tour/show';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -263,6 +291,7 @@ class TourController
      */
     public function delete()
     {
+        requireAdmin();
         $id = $_GET['id'] ?? 0;
         $tour = $this->tourModel->findById($id);
 

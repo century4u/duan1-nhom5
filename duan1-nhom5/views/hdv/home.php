@@ -1,134 +1,186 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home - Hướng dẫn viên</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8f9fa;
-    }
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      transition: all 0.3s ease;
-    }
-    .stat-card {
-      border-radius: 12px;
-      padding: 20px;
-      color: #fff;
-    }
-    .bg-tours { background: #667eea; }
-    .bg-calendar { background: #48bb78; }
-    .bg-reports { background: #f6ad55; }
-    .card-title { font-size: 1.1rem; font-weight: 600; }
-    .upcoming-tour { font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; background-color: #e7f1ff; color: #0a58ca; margin-bottom: 4px; cursor: pointer; }
-    .upcoming-tour:hover { background-color: #cfe2ff; }
-  </style>
-</head>
-<body>
+<style>
+  /* Reset & Base */
+  :root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --info-color: #0dcaf0;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --light-bg: #f8f9fa;
+    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  }
 
-<!-- Header -->
-<header class="bg-primary text-white py-3 mb-4">
-  <div class="container d-flex justify-content-between align-items-center">
-    <a class="nav-link" href="<?= BASE_URL ?>?action=hvd">
-    <h1 class="h5 mb-0"><i class="bi bi-person"></i> Xin chào, <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User') ?></h1></a>
-    <nav>
-      <a href="<?= BASE_URL ?>?action=hvd/tourss" class="btn btn-light btn-sm me-2"><i class="bi bi-compass"></i>Tổng Tour</a>
-      <a href="calendar.html" class="btn btn-light btn-sm me-2"><i class="bi bi-calendar3"></i> Lịch làm việc</a>
-      <a href="reports.html" class="btn btn-light btn-sm"><i class="bi bi-file-earmark-text"></i> Báo cáo</a>
-    </nav>
-  </div>
-</header>
+  /* Header Styles */
+  .bg-header {
+    background-color: var(--primary-color) !important;
+  }
 
-<main class="container">
+  /* Card Stats */
+  .card-stat {
+    border: none;
+    border-radius: 4px;
+    color: white;
+    transition: transform 0.2s;
+  }
 
-  <!-- Thống kê nhanh -->
-  <div class="row g-4 mb-4">
-    <a href="<?= BASE_URL ?>?action=hvd/tours&guide_id=<?= urlencode($_GET['guide_id'] ?? ($_SESSION['user_id'] ?? '')) ?>" class="text-decoration-none col-md-4">
-      <div class="stat-card bg-tours card-hover text-center">
-        <div class="card-title"><i class="bi bi-compass"></i> Tour đang phụ trách</div>
-        <div class="display-6 mt-2" id="total-tours"><?= isset($totalTours) ? (int)$totalTours : 0 ?></div>
+  .card-stat:hover {
+    transform: translateY(-2px);
+  }
+
+  .bg-stat-blue {
+    background-color: #6c8bef;
+  }
+
+  .bg-stat-green {
+    background-color: #4ab779;
+  }
+
+  .bg-stat-orange {
+    background-color: #f1ad57;
+  }
+
+  .stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Empty State */
+  .empty-state-icon {
+    width: 60px;
+    height: 60px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
+
+  .empty-state-icon i {
+    font-size: 2rem;
+    color: #adb5bd;
+  }
+</style>
+
+<div class="container-fluid p-0">
+  <!-- Header -->
+  <header class="bg-header text-white py-2 mb-4 rounded">
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-phone fs-4 me-2"></i>
+        <h1 class="h6 mb-0">Dashboard HDV |
+          <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User') ?>
+        </h1>
       </div>
-    </a>
+      <nav>
+        <a href="<?= BASE_URL ?>?action=checkins" class="btn btn-light text-dark btn-sm me-2 fw-bold">
+          <i class="bi bi-qr-code-scan me-1"></i> Check-in
+        </a>
+        <a href="<?= BASE_URL ?>?action=logout" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-box-arrow-right"></i> Đăng xuất
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <!-- Total Tours -->
     <div class="col-md-4">
-      <div class="stat-card bg-calendar card-hover text-center">
-        <div class="card-title"><i class="bi bi-calendar3"></i> Lịch sắp tới</div>
-        <div class="display-6 mt-2" id="upcoming-days"><?= isset($upcomingTours) ? count($upcomingTours) : 0 ?></div>
+      <div class="card card-stat bg-stat-blue h-100">
+        <div class="card-body d-flex align-items-center justify-content-between px-4">
+          <div>
+            <div class="stat-value"><?= $stats['total_assigned'] ?? 0 ?></div>
+            <div class="stat-label">Tổng tour</div>
+          </div>
+          <i class="bi bi-geo-alt stat-icon"></i>
+        </div>
       </div>
     </div>
+
+    <!-- Upcoming -->
     <div class="col-md-4">
-      <div class="stat-card bg-reports card-hover text-center">
-        <div class="card-title"><i class="bi bi-file-earmark-text"></i> Báo cáo chưa nộp</div>
-        <div class="display-6 mt-2" id="pending-reports"><?= isset($pendingReports) ? (int)$pendingReports : 0 ?></div>
+      <div class="card card-stat bg-stat-green h-100">
+        <div class="card-body d-flex align-items-center justify-content-between px-4">
+          <div>
+            <div class="stat-value"><?= $stats['upcoming_count'] ?? 0 ?></div>
+            <div class="stat-label">Sắp tới</div>
+          </div>
+          <i class="bi bi-calendar-event stat-icon"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed -->
+    <div class="col-md-4">
+      <div class="card card-stat bg-stat-orange h-100">
+        <div class="card-body d-flex align-items-center justify-content-between px-4">
+          <div>
+            <div class="stat-value"><?= $stats['completed_count'] ?? 0 ?></div>
+            <div class="stat-label">Hoàn thành</div>
+          </div>
+          <i class="bi bi-check2-circle stat-icon"></i>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Lịch làm việc sắp tới -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-white">
-      <h3 class="h5 mb-0"><i class="bi bi-clock-history"></i> Tour sắp tới</h3>
-    </div>
-    <div class="card-body" id="upcoming-tours">
-      <?php if (!empty($upcomingTours)): ?>
-        <?php foreach ($upcomingTours as $t): ?>
-          <a href="<?= BASE_URL ?>?action=hvd/tours/show&id=<?= htmlspecialchars($t['id'] ?? $t['tour_id'] ?? '') ?>&guide_id=<?= urlencode($_GET['guide_id'] ?? ($_SESSION['user_id'] ?? '')) ?>" class="text-decoration-none text-reset">
-          <div class="card mb-3" style="cursor:pointer;">
-            <div class="card-body d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="mb-1"><?= htmlspecialchars($t['name'] ?? $t['tour_name'] ?? '') ?></h6>
-                <p class="text-muted small mb-0"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($t['destination'] ?? ($t['departure_location'] ?? '-')) ?></p>
-                <div class="text-muted small">Thời gian: <?= htmlspecialchars($t['duration'] ?? '-') ?></div>
+  <!-- Upcoming Work Section -->
+  <div class="row">
+    <div class="col-12">
+      <h5 class="mb-3 text-secondary text-uppercase fs-6 fw-bold">Công việc sắp tới của bạn</h5>
+
+      <?php if (empty($upcomingTours)): ?>
+        <div class="bg-white rounded p-5 text-center shadow-sm">
+          <div class="empty-state-icon">
+            <i class="bi bi-x-lg"></i>
+          </div>
+          <p class="text-secondary mb-0">Hiện tại bạn chưa có lịch trình tour nào sắp tới.</p>
+        </div>
+      <?php else: ?>
+        <div class="list-group shadow-sm">
+          <?php foreach ($upcomingTours as $tour): ?>
+            <div class="list-group-item list-group-item-action p-3 border-0 border-bottom">
+              <div class="d-flex w-100 justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-1 fw-bold text-primary"><?= htmlspecialchars($tour['tour_name'] ?? 'Tour') ?></h6>
+                  <small class="text-muted">
+                    <i class="bi bi-clock me-1"></i> <?= date('d/m/Y', strtotime($tour['start_date'])) ?>
+                    - <?= date('d/m/Y', strtotime($tour['end_date'])) ?>
+                  </small>
+                </div>
+                <span class="badge bg-<?= $tour['status_class'] ?? 'primary' ?> rounded-pill">
+                  <?= htmlspecialchars($tour['status_text'] ?? 'Sắp tới') ?>
+                </span>
               </div>
-              <div class="text-end">
-                <?php
-                  $statusLabel = '';
-                  if (isset($t['status'])) {
-                      $statusLabel = ($t['status'] == 0) ? 'Sắp diễn ra' : $t['status'];
-                  }
-                ?>
-                <span class="badge bg-primary"><?= htmlspecialchars($statusLabel) ?></span>
-                <div class="text-muted small">Giá: <?= isset($t['price']) ? number_format($t['price'], 0, ',', '.') . ' ₫' : '-' ?></div>
-                <?php
-                  // Nếu controller đã chuẩn bị sẵn booked_participants thì dùng, nếu không thì tính bằng model
-                  $bookedCount = $t['booked_participants'] ?? null;
-                  if ($bookedCount === null) {
-                      // Tính tạm ở view (fallback) — tốt nhất là controller nên cung cấp dữ liệu này
-                      require_once PATH_MODEL . 'BookingModel.php';
-                      $bm = new BookingModel();
-                      $bookedCount = $bm->countParticipantsByTourId($t['id'] ?? $t['tour_id'] ?? 0);
-                  }
-                ?>
-                <div class="text-muted small">Số khách đã đăng ký: <?= htmlspecialchars($bookedCount ?? 0) ?> / <?= htmlspecialchars($t['max_participants'] ?? $t['max_guests'] ?? '-') ?></div>
+              <?php if (isset($tour['participant_count'])): ?>
+                <small class="text-muted mt-2 d-block">
+                  <i class="bi bi-people me-1"></i> <?= $tour['participant_count'] ?> khách
+                </small>
+                </small>
+              <?php endif; ?>
+
+              <div class="mt-2 d-flex justify-content-end">
+                <a href="<?= BASE_URL ?>?action=hvd/checkin&id=<?= $tour['id'] ?>" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-qr-code-scan me-1"></i> Check-in
+                </a>
               </div>
             </div>
-          </div>
-          </a>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <div class="text-muted">Chưa có tour sắp tới</div>
+          <?php endforeach; ?>
+        </div>
       <?php endif; ?>
     </div>
   </div>
-
-  <!-- Danh sách tour gần đây -->
-  <div class="card shadow-sm">
-    <div class="card-header bg-white">
-      <h3 class="h5 mb-0"><i class="bi bi-compass"></i> Tour gần đây</h3>
-    </div>
-    <div class="card-body" id="recent-tours">
-      <div class="text-muted">Chưa có tour nào</div>
-    </div>
-  </div>
-
-</main>
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+</div>

@@ -49,8 +49,11 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
+/* Scrollbar Styles */
 .sidebar::-webkit-scrollbar {
     width: 6px;
 }
@@ -76,73 +79,56 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--sidebar-divider);
-}
-
-.sidebar-header h3 {
-    color: var(--sidebar-text);
-    font-size: 1.25rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.sidebar-header h3 i {
-    font-size: 1.5rem;
-    color: var(--sidebar-active);
+    flex-shrink: 0;
 }
 
 .sidebar-title {
-    white-space: nowrap;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+    letter-spacing: 0.5px;
 }
 
-/* Sidebar User Info */
+.sidebar-header i {
+    font-size: 1.5rem;
+}
+
+/* Sidebar User */
 .sidebar-user {
     padding: 1.5rem 1rem;
     border-bottom: 1px solid var(--sidebar-divider);
-    background: rgba(0, 0, 0, 0.1);
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
 }
 
 .user-avatar {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
-    background: var(--sidebar-active);
+    background: rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 1rem;
     font-size: 1.5rem;
-    color: white;
-    flex-shrink: 0;
-}
-
-.user-details {
-    flex: 1;
-    min-width: 0;
 }
 
 .user-name {
     font-weight: 600;
     font-size: 0.95rem;
-    color: var(--sidebar-text);
+    margin-bottom: 0.2rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.user-role {
-    margin-top: 0.25rem;
+    max-width: 160px;
 }
 
 .user-role .badge {
     font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.3em 0.6em;
 }
 
 /* Sidebar Menu */
@@ -150,85 +136,59 @@ body {
     list-style: none;
     padding: 1rem 0;
     margin: 0;
+    flex: 1;
 }
 
 .menu-divider {
-    padding: 0.75rem 1rem;
+    padding: 1rem 1.5rem 0.5rem;
     font-size: 0.75rem;
     text-transform: uppercase;
+    color: #95a5a6;
+    font-weight: 700;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.5);
-    font-weight: 600;
-    margin-top: 0.5rem;
-}
-
-.menu-divider:first-child {
-    margin-top: 0;
 }
 
 .menu-item {
-    margin: 0.25rem 0;
+    margin-bottom: 0.2rem;
 }
 
-.menu-link {
+.sidebar .menu-link {
     display: flex;
     align-items: center;
-    padding: 0.875rem 1.5rem;
-    color: var(--sidebar-text);
+    padding: 0.8rem 1.5rem;
+    color: #bdc3c7;
     text-decoration: none;
     transition: var(--transition);
-    position: relative;
-    gap: 0.75rem;
-    font-size: 0.95rem;
+    border-left: 3px solid transparent;
 }
 
-.menu-link:hover {
+.sidebar .menu-link:hover {
     background: var(--sidebar-hover);
-    color: white;
-    padding-left: 2rem;
+    color: #fff;
+    border-left-color: rgba(255, 255, 255, 0.5);
 }
 
-.menu-link.active {
-    background: var(--sidebar-active);
-    color: white;
-    font-weight: 600;
-}
-
-.menu-link.active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: white;
+.sidebar .menu-link.active {
+    background: linear-gradient(90deg, rgba(52, 152, 219, 0.2) 0%, transparent 100%);
+    color: #fff;
+    border-left-color: var(--sidebar-active);
 }
 
 .menu-link i {
     font-size: 1.2rem;
-    width: 24px;
+    margin-right: 1rem;
+    width: 20px;
     text-align: center;
-    flex-shrink: 0;
 }
 
 .menu-link span {
-    flex: 1;
-    white-space: nowrap;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
 .menu-link .badge {
-    margin-left: auto;
+    padding: 0.35em 0.6em;
     font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
-}
-
-.menu-link.text-danger {
-    color: #e74c3c !important;
-}
-
-.menu-link.text-danger:hover {
-    background: rgba(231, 76, 60, 0.2);
-    color: #e74c3c !important;
 }
 
 /* Sidebar Footer */
@@ -236,11 +196,8 @@ body {
     padding: 1rem;
     text-align: center;
     border-top: 1px solid var(--sidebar-divider);
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
     background: rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
 }
 
 /* ============================================
@@ -430,13 +387,13 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-.container-fluid > * {
+.container-fluid>* {
     animation: fadeIn 0.3s ease;
 }
-

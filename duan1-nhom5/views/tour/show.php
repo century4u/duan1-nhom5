@@ -53,8 +53,9 @@
                     <p><strong>Số người tối đa:</strong> <?= $tour['max_participants'] ?? 'Không giới hạn' ?></p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Giá cơ bản:</strong> <span class="text-danger fw-bold"><?= number_format($tour['price'], 0, ',', '.') ?> đ</span></p>
-                    <p><strong>Trạng thái:</strong> 
+                    <p><strong>Giá cơ bản:</strong> <span
+                            class="text-danger fw-bold"><?= number_format($tour['price'], 0, ',', '.') ?> đ</span></p>
+                    <p><strong>Trạng thái:</strong>
                         <?php if ($tour['status'] == 1): ?>
                             <span class="badge bg-success">Hoạt động</span>
                         <?php else: ?>
@@ -87,10 +88,9 @@
                     <?php foreach ($images as $image): ?>
                         <div class="col-md-3">
                             <div class="card">
-                                <img src="<?= BASE_ASSETS_UPLOADS . $image['image_path'] ?>" 
-                                     class="card-img-top" 
-                                     alt="<?= htmlspecialchars($image['caption'] ?? '') ?>"
-                                     style="height: 200px; object-fit: cover;">
+                                <img src="<?= BASE_ASSETS_UPLOADS . $image['image_path'] ?>" class="card-img-top"
+                                    alt="<?= htmlspecialchars($image['caption'] ?? '') ?>"
+                                    style="height: 200px; object-fit: cover;">
                                 <?php if ($image['is_primary']): ?>
                                     <span class="badge bg-primary position-absolute top-0 start-0 m-2">Ảnh chính</span>
                                 <?php endif; ?>
@@ -107,10 +107,59 @@
         </div>
     </div>
 
+    <!-- Lịch khởi hành -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Lịch khởi hành</h5>
+        </div>
+        <div class="card-body">
+            <?php if (empty($departureSchedules)): ?>
+                <p class="text-muted text-center">Chưa có lịch khởi hành nào sắp tới</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Ngày đi</th>
+                                <th>Ngày về</th>
+                                <th>Giờ</th>
+                                <th>Chỗ</th>
+                                <th>Đã đặt</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($departureSchedules as $ds): ?>
+                                <tr>
+                                    <td><strong><?= date('d/m/Y', strtotime($ds['departure_date'])) ?></strong></td>
+                                    <td><?= date('d/m/Y', strtotime($ds['end_date'])) ?></td>
+                                    <td><?= date('H:i', strtotime($ds['departure_time'])) ?></td>
+                                    <td><?= $ds['current_participants'] ?>/<?= $ds['max_participants'] ?? '∞' ?></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <?php
+                                            $percent = ($ds['max_participants'] > 0) ? ($ds['current_participants'] / $ds['max_participants'] * 100) : 0;
+                                            ?>
+                                            <div class="progress-bar bg-success" role="progressbar"
+                                                style="width: <?= $percent ?>%"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success"><?= ucfirst($ds['status']) ?></span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <!-- Lịch trình -->
     <div class="card mb-4">
         <div class="card-header bg-success text-white">
-            <h5 class="mb-0">Lịch trình Tour</h5>
+            <h5 class="mb-0">Lịch trình chi tiết</h5>
         </div>
         <div class="card-body">
             <?php if (empty($schedules)): ?>
@@ -129,16 +178,16 @@
                                         <small class="text-muted"><?= date('d/m/Y', strtotime($schedule['date'])) ?></small>
                                     <?php endif; ?>
                                 </div>
-                                
+
                                 <?php if (!empty($schedule['description'])): ?>
                                     <p class="card-text"><?= nl2br(htmlspecialchars($schedule['description'])) ?></p>
                                 <?php endif; ?>
 
                                 <?php if (!empty($schedule['activities'])): ?>
-                                    <?php 
+                                    <?php
                                     $activities = json_decode($schedule['activities'], true);
                                     if (is_array($activities) && !empty($activities)):
-                                    ?>
+                                        ?>
                                         <div class="mb-2">
                                             <strong>Hoạt động:</strong>
                                             <ul class="mb-0">
@@ -158,12 +207,14 @@
                                     <?php endif; ?>
                                     <?php if (!empty($schedule['accommodation'])): ?>
                                         <div class="col-md-4">
-                                            <small><strong>Nơi nghỉ:</strong> <?= htmlspecialchars($schedule['accommodation']) ?></small>
+                                            <small><strong>Nơi nghỉ:</strong>
+                                                <?= htmlspecialchars($schedule['accommodation']) ?></small>
                                         </div>
                                     <?php endif; ?>
                                     <?php if (!empty($schedule['transport'])): ?>
                                         <div class="col-md-4">
-                                            <small><strong>Phương tiện:</strong> <?= htmlspecialchars($schedule['transport']) ?></small>
+                                            <small><strong>Phương tiện:</strong>
+                                                <?= htmlspecialchars($schedule['transport']) ?></small>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -196,7 +247,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php 
+                            <?php
                             $priceTypeLabels = [
                                 'adult' => 'Người lớn',
                                 'child' => 'Trẻ em',
@@ -204,15 +255,18 @@
                                 'senior' => 'Người cao tuổi',
                                 'group' => 'Nhóm'
                             ];
-                            foreach ($prices as $price): 
-                            ?>
+                            foreach ($prices as $price):
+                                ?>
                                 <tr>
-                                    <td><strong><?= $priceTypeLabels[$price['price_type']] ?? $price['price_type'] ?></strong></td>
-                                    <td class="text-danger fw-bold"><?= number_format($price['price'], 0, ',', '.') ?> <?= $price['currency'] ?></td>
+                                    <td><strong><?= $priceTypeLabels[$price['price_type']] ?? $price['price_type'] ?></strong>
+                                    </td>
+                                    <td class="text-danger fw-bold"><?= number_format($price['price'], 0, ',', '.') ?>
+                                        <?= $price['currency'] ?>
+                                    </td>
                                     <td>
                                         <?php if ($price['start_date'] || $price['end_date']): ?>
                                             <?= $price['start_date'] ? date('d/m/Y', strtotime($price['start_date'])) : 'Từ đầu' ?>
-                                            - 
+                                            -
                                             <?= $price['end_date'] ? date('d/m/Y', strtotime($price['end_date'])) : 'Đến cuối' ?>
                                         <?php else: ?>
                                             Áp dụng thường xuyên
@@ -249,7 +303,7 @@
             <?php if (empty($policies)): ?>
                 <p class="text-muted text-center">Chưa có chính sách nào</p>
             <?php else: ?>
-                <?php 
+                <?php
                 $policyTypeLabels = [
                     'booking' => 'Chính sách đặt tour',
                     'cancellation' => 'Chính sách hủy tour',
@@ -257,8 +311,8 @@
                     'refund' => 'Chính sách hoàn tiền',
                     'terms' => 'Điều khoản'
                 ];
-                foreach ($policiesByType as $type => $typePolicies): 
-                ?>
+                foreach ($policiesByType as $type => $typePolicies):
+                    ?>
                     <div class="mb-4">
                         <h6 class="text-primary"><?= $policyTypeLabels[$type] ?? ucfirst($type) ?></h6>
                         <?php foreach ($typePolicies as $policy): ?>
@@ -281,72 +335,20 @@
         </div>
     </div>
 
-    <!-- Nhà cung cấp -->
-    <div class="card mb-4">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">Nhà cung cấp dịch vụ</h5>
-        </div>
-        <div class="card-body">
-            <?php if (empty($suppliers)): ?>
-                <p class="text-muted text-center">Chưa có nhà cung cấp nào</p>
-            <?php else: ?>
-                <?php 
-                $supplierTypeLabels = [
-                    'hotel' => 'Khách sạn',
-                    'transport' => 'Vận chuyển',
-                    'restaurant' => 'Nhà hàng',
-                    'guide' => 'Hướng dẫn viên',
-                    'other' => 'Khác'
-                ];
-                foreach ($suppliersByType as $type => $typeSuppliers): 
-                ?>
-                    <div class="mb-4">
-                        <h6 class="text-secondary"><?= $supplierTypeLabels[$type] ?? ucfirst($type) ?></h6>
-                        <div class="row g-3">
-                            <?php foreach ($typeSuppliers as $supplier): ?>
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h6 class="card-title"><?= htmlspecialchars($supplier['supplier_name'] ?? $supplier['name']) ?></h6>
-                                            <?php if (!empty($supplier['service_type'])): ?>
-                                                <p class="mb-1"><small><strong>Dịch vụ:</strong> <?= htmlspecialchars($supplier['service_type']) ?></small></p>
-                                            <?php endif; ?>
-                                            <?php if (!empty($supplier['service_date'])): ?>
-                                                <p class="mb-1"><small><strong>Ngày:</strong> <?= date('d/m/Y', strtotime($supplier['service_date'])) ?></small></p>
-                                            <?php endif; ?>
-                                            <?php if (!empty($supplier['phone'])): ?>
-                                                <p class="mb-1"><small><strong>Điện thoại:</strong> <?= htmlspecialchars($supplier['phone']) ?></small></p>
-                                            <?php endif; ?>
-                                            <?php if (!empty($supplier['email'])): ?>
-                                                <p class="mb-1"><small><strong>Email:</strong> <?= htmlspecialchars($supplier['email']) ?></small></p>
-                                            <?php endif; ?>
-                                            <?php if (!empty($supplier['notes'])): ?>
-                                                <p class="mb-0"><small class="text-muted"><?= htmlspecialchars($supplier['notes']) ?></small></p>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </div>
 </div>
 
 <style>
-.timeline .card {
-    position: relative;
-}
-.timeline .card::before {
-    content: '';
-    position: absolute;
-    left: -2px;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: #0d6efd;
-}
-</style>
+    .timeline .card {
+        position: relative;
+    }
 
+    .timeline .card::before {
+        content: '';
+        position: absolute;
+        left: -2px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #0d6efd;
+    }
+</style>

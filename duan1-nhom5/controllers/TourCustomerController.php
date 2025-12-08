@@ -28,7 +28,7 @@ class TourCustomerController
         ];
 
         // Loại bỏ các filter rỗng
-        $filters = array_filter($filters, function($value) {
+        $filters = array_filter($filters, function ($value) {
             return $value !== '' && $value !== null;
         });
 
@@ -62,10 +62,14 @@ class TourCustomerController
         ];
 
         foreach ($customers as $customer) {
-            if ($customer['gender'] === 'male') $stats['male']++;
-            if ($customer['gender'] === 'female') $stats['female']++;
-            if ($customer['booking_status'] === 'confirmed') $stats['confirmed']++;
-            if ($customer['booking_status'] === 'deposit') $stats['deposit']++;
+            if ($customer['gender'] === 'male')
+                $stats['male']++;
+            if ($customer['gender'] === 'female')
+                $stats['female']++;
+            if ($customer['booking_status'] === 'confirmed')
+                $stats['confirmed']++;
+            if ($customer['booking_status'] === 'deposit')
+                $stats['deposit']++;
         }
 
         // Lấy danh sách tour và lịch khởi hành cho filter
@@ -121,10 +125,14 @@ class TourCustomerController
         ];
 
         foreach ($customers as $customer) {
-            if ($customer['gender'] === 'male') $stats['male']++;
-            if ($customer['gender'] === 'female') $stats['female']++;
-            if ($customer['booking_status'] === 'confirmed') $stats['confirmed']++;
-            if ($customer['booking_status'] === 'deposit') $stats['deposit']++;
+            if ($customer['gender'] === 'male')
+                $stats['male']++;
+            if ($customer['gender'] === 'female')
+                $stats['female']++;
+            if ($customer['booking_status'] === 'confirmed')
+                $stats['confirmed']++;
+            if ($customer['booking_status'] === 'deposit')
+                $stats['deposit']++;
         }
 
         $title = 'Chi tiết danh sách khách - ' . $tour['name'];
@@ -133,13 +141,40 @@ class TourCustomerController
     }
 
     /**
-     * Xuất danh sách khách (Excel/PDF)
+     * API: Lấy danh sách lịch khởi hành theo tour (AJAX)
+     */
+    public function getSchedules()
+    {
+        $tourId = $_GET['tour_id'] ?? 0;
+        if (!$tourId) {
+            echo json_encode([]);
+            return;
+        }
+
+        $schedules = $this->departureScheduleModel->getAll(['tour_id' => $tourId]);
+
+        // Format lại dữ liệu cần thiết
+        $data = array_map(function ($schedule) {
+            return [
+                'id' => $schedule['id'],
+                'departure_date' => $schedule['departure_date'],
+                'departure_time' => $schedule['departure_time'],
+                'meeting_point' => $schedule['meeting_point']
+            ];
+        }, $schedules);
+
+        header('Content-Type: application/json');
+        echo json_encode($data);
+    }
+
+    /**
+     * Xuất danh sách khách (Excel/CCSV)
      */
     public function export()
     {
         $tourId = $_GET['tour_id'] ?? 0;
         $scheduleId = $_GET['departure_schedule_id'] ?? 0;
-        $format = $_GET['format'] ?? 'excel'; // excel hoặc pdf
+        $format = $_GET['format'] ?? 'excel'; // excel (csv) hoặc pdf
 
         $tour = null;
         $schedule = null;
@@ -164,9 +199,45 @@ class TourCustomerController
             exit;
         }
 
-        // TODO: Implement export to Excel/PDF
-        // Tạm thời redirect về trang show
-        header('Location: ' . BASE_URL . '?action=tour-customers/show&tour_id=' . $tourId . ($scheduleId ? '&departure_schedule_id=' . $scheduleId : ''));
+        if ($format === 'pdf') {
+            // Chưa hỗ trợ PDF, quay về show
+            $_SESSION['error'] = 'Chưa hỗ trợ xuất PDF!';
+            header('Location: ' . BASE_URL . '?action=tour-customers/show&tour_id=' . $tourId . ($scheduleId ? '&departure_schedule_id=' . $scheduleId : ''));
+            exit;
+        }
+
+        // Xuất CSV
+        $filename = 'danh-sach-khach-' . date('Y-m-d') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+
+        // Add BOM for UTF-8 Excel support
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        // Header
+        fputcsv($output, ['STT', 'Họ và tên', 'Giới tính', 'Ngày sinh', 'Điện thoại', 'Email', 'Địa chỉ', 'Trạng thái Assign']);
+
+        $i = 1;
+        foreach ($customers as $customer) {
+            $gender = $customer['gender'] === 'male' ? 'Nam' : ($customer['gender'] === 'female' ? 'Nữ' : 'Khác');
+            $status = $customer['booking_status'];
+
+            fputcsv($output, [
+                $i++,
+                $customer['fullname'],
+                $gender,
+                $customer['birthdate'],
+                $customer['customer_phone'] ?? '',
+                $customer['customer_email'] ?? '',
+                $customer['address'] ?? '',
+                $status
+            ]);
+        }
+
+        fclose($output);
         exit;
     }
 }

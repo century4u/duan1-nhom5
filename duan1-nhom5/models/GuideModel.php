@@ -20,6 +20,9 @@ class GuideModel extends BaseModel
         if (isset($filters['status'])) {
             $sql .= " AND status = :status";
             $params['status'] = $filters['status'];
+        } else {
+            // Mặc định không lấy HDV đã xóa (status = 0)
+            $sql .= " AND status != 0";
         }
 
         if (!empty($filters['search'])) {
@@ -57,6 +60,39 @@ class GuideModel extends BaseModel
     }
 
     /**
+     * Lấy HDV theo user_id
+     */
+    public function findByUserId($userId)
+    {
+        // Check if user_id column exists by trying select (or assume it exists after migration)
+        $sql = "SELECT * FROM {$this->table} WHERE user_id = :user_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Link User ID to Guide
+     */
+    public function linkUser($guideId, $userId)
+    {
+        $sql = "UPDATE {$this->table} SET user_id = :user_id WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute(['user_id' => $userId, 'id' => $guideId]);
+    }
+
+    /**
+     * Find Unclaimed Guide by Code
+     */
+    public function findUnclaimedByCode($code)
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE code = :code AND (user_id IS NULL OR user_id = 0)";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['code' => $code]);
+        return $stmt->fetch();
+    }
+
+    /**
      * Tạo HDV mới
      */
     public function create($data)
@@ -69,7 +105,7 @@ class GuideModel extends BaseModel
                 (:code, :full_name, :birthdate, :gender, :avatar, :phone, :email, :address, :id_card, :passport,
                  :languages, :certificates, :experience_years, :experience_description, :specialization,
                  :performance_rating, :health_status, :health_notes, :status)";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'code' => $data['code'],
@@ -122,7 +158,7 @@ class GuideModel extends BaseModel
                 health_notes = :health_notes,
                 status = :status
                 WHERE id = :id";
-        
+
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             'id' => $id,

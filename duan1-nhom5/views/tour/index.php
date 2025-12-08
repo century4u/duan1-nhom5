@@ -1,7 +1,9 @@
 <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- <h2>Danh sách Tour</h2> -->
-        <a href="<?= BASE_URL ?>?action=tours/create" class="btn btn-primary">Tạo Tour Mới</a>
+        <?php if (isAdmin()): ?>
+            <a href="<?= BASE_URL ?>?action=tours/create" class="btn btn-primary">Tạo Tour Mới</a>
+        <?php endif; ?>
     </div>
 
     <?php if (isset($_SESSION['success'])): ?>
@@ -27,8 +29,8 @@
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Tìm kiếm</label>
-                        <input type="text" class="form-control" name="search" 
-                               value="<?= $_GET['search'] ?? '' ?>" placeholder="Tên, mã, điểm đến...">
+                        <input type="text" class="form-control" name="search" value="<?= $_GET['search'] ?? '' ?>"
+                            placeholder="Tên, mã, điểm đến...">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Loại tour</label>
@@ -45,8 +47,10 @@
                         <label class="form-label">Trạng thái</label>
                         <select class="form-select" name="status">
                             <option value="">Tất cả</option>
-                            <option value="1" <?= (isset($_GET['status']) && $_GET['status'] == '1') ? 'selected' : '' ?>>Hoạt động</option>
-                            <option value="0" <?= (isset($_GET['status']) && $_GET['status'] == '0') ? 'selected' : '' ?>>Không hoạt động</option>
+                            <option value="1" <?= (isset($_GET['status']) && $_GET['status'] == '1') ? 'selected' : '' ?>>
+                                Hoạt động</option>
+                            <option value="0" <?= (isset($_GET['status']) && $_GET['status'] == '0') ? 'selected' : '' ?>>
+                                Không hoạt động</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -103,13 +107,16 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <a href="<?= BASE_URL ?>?action=tours/show&id=<?= $tour['id'] ?>" 
-                                           class="btn btn-sm btn-info">Chi tiết</a>
-                                        <a href="<?= BASE_URL ?>?action=tours/edit&id=<?= $tour['id'] ?>" 
-                                           class="btn btn-sm btn-warning">Sửa</a>
-                                        <a href="<?= BASE_URL ?>?action=tours/delete&id=<?= $tour['id'] ?>" 
-                                           class="btn btn-sm btn-danger"
-                                           onclick="return confirm('Bạn có chắc chắn muốn xóa tour này?')">Xóa</a>
+                                    <td>
+                                        <a href="<?= BASE_URL ?>?action=tours/show&id=<?= $tour['id'] ?>"
+                                            class="btn btn-sm btn-info">Chi tiết</a>
+                                        <?php if (isAdmin()): ?>
+                                        <a href="<?= BASE_URL ?>?action=tours/edit&id=<?= $tour['id'] ?>"
+                                            class="btn btn-sm btn-warning">Sửa</a>
+                                        <a href="<?= BASE_URL ?>?action=tours/delete&id=<?= $tour['id'] ?>"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Bạn có chắc chắn muốn xóa tour này?')">Xóa</a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -120,4 +127,3 @@
         </div>
     </div>
 </div>
-

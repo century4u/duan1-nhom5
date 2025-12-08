@@ -30,7 +30,7 @@ class CheckinController
         ];
 
         // Loại bỏ các filter rỗng
-        $filters = array_filter($filters, function($value) {
+        $filters = array_filter($filters, function ($value) {
             return $value !== '' && $value !== null;
         });
 
@@ -63,10 +63,14 @@ class CheckinController
         ];
 
         foreach ($checkins as $checkin) {
-            if ($checkin['status'] === 'checked_in') $stats['checked_in']++;
-            elseif ($checkin['status'] === 'pending') $stats['pending']++;
-            elseif ($checkin['status'] === 'absent') $stats['absent']++;
-            elseif ($checkin['status'] === 'late') $stats['late']++;
+            if ($checkin['status'] === 'checked_in')
+                $stats['checked_in']++;
+            elseif ($checkin['status'] === 'pending')
+                $stats['pending']++;
+            elseif ($checkin['status'] === 'absent')
+                $stats['absent']++;
+            elseif ($checkin['status'] === 'late')
+                $stats['late']++;
         }
 
         // Lấy danh sách tour và lịch khởi hành cho filter
@@ -137,9 +141,12 @@ class CheckinController
 
         foreach ($customers as $customer) {
             if ($customer['checkin']) {
-                if ($customer['checkin']['status'] === 'checked_in') $stats['checked_in']++;
-                elseif ($customer['checkin']['status'] === 'late') $stats['late']++;
-                elseif ($customer['checkin']['status'] === 'absent') $stats['absent']++;
+                if ($customer['checkin']['status'] === 'checked_in')
+                    $stats['checked_in']++;
+                elseif ($customer['checkin']['status'] === 'late')
+                    $stats['late']++;
+                elseif ($customer['checkin']['status'] === 'absent')
+                    $stats['absent']++;
             } else {
                 $stats['pending']++;
             }
@@ -175,7 +182,7 @@ class CheckinController
 
         // Kiểm tra đã check-in chưa
         $existingCheckin = $this->checkinModel->getByBookingDetailId($bookingDetailId);
-        
+
         if ($existingCheckin) {
             // Cập nhật check-in hiện có
             $result = $this->checkinModel->updateStatus(
@@ -201,6 +208,21 @@ class CheckinController
             $_SESSION['error'] = 'Có lỗi xảy ra khi check-in!';
         }
 
+        // Return JSON if AJAX request
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => $result,
+                'message' => $result ? 'Cập nhật thành công!' : 'Có lỗi xảy ra!',
+                'data' => [
+                    'status' => $status,
+                    'checkin_time' => date('H:i d/m/Y'),
+                    'checked_by' => $_SESSION['username'] ?? 'Me'
+                ]
+            ]);
+            exit;
+        }
+
         $redirectUrl = BASE_URL . '?action=checkins/show';
         if ($departureScheduleId) {
             $redirectUrl .= '&departure_schedule_id=' . $departureScheduleId;
@@ -212,7 +234,7 @@ class CheckinController
                 $redirectUrl .= '&tour_id=' . $booking['tour_id'];
             }
         }
-        
+
         header('Location: ' . $redirectUrl);
         exit;
     }
@@ -266,7 +288,7 @@ class CheckinController
         } elseif (!empty($_POST['tour_id'])) {
             $redirectUrl .= '&tour_id=' . $_POST['tour_id'];
         }
-        
+
         header('Location: ' . $redirectUrl);
         exit;
     }

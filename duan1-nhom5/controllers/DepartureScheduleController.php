@@ -32,12 +32,12 @@ class DepartureScheduleController
             'search' => $_GET['search'] ?? ''
         ];
 
-        $filters = array_filter($filters, function($value) {
+        $filters = array_filter($filters, function ($value) {
             return $value !== '' && $value !== null;
         });
 
         $schedules = $this->scheduleModel->getAll($filters);
-        
+
         // Thêm thông tin phân bổ và booking count
         foreach ($schedules as &$schedule) {
             $schedule['assignments'] = $this->assignmentModel->getByScheduleId($schedule['id']);
@@ -48,7 +48,7 @@ class DepartureScheduleController
 
         $title = 'Quản lý Lịch Khởi Hành';
         $view = 'departure-schedule/index';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -57,10 +57,10 @@ class DepartureScheduleController
     public function create()
     {
         $tours = $this->tourModel->getAll(['status' => 1]);
-        
+
         $title = 'Tạo Lịch Khởi Hành Mới';
         $view = 'departure-schedule/create';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -74,13 +74,13 @@ class DepartureScheduleController
         }
 
         $data = [
-            'tour_id' => (int)($_POST['tour_id'] ?? 0),
+            'tour_id' => (int) ($_POST['tour_id'] ?? 0),
             'departure_date' => $_POST['departure_date'] ?? '',
             'departure_time' => $_POST['departure_time'] ?? '',
             'meeting_point' => trim($_POST['meeting_point'] ?? ''),
             'end_date' => $_POST['end_date'] ?? '',
             'end_time' => $_POST['end_time'] ?? '',
-            'max_participants' => !empty($_POST['max_participants']) ? (int)$_POST['max_participants'] : null,
+            'max_participants' => !empty($_POST['max_participants']) ? (int) $_POST['max_participants'] : null,
             'status' => $_POST['status'] ?? 'draft',
             'notes' => trim($_POST['notes'] ?? '')
         ];
@@ -141,7 +141,7 @@ class DepartureScheduleController
 
         $title = 'Chi tiết Lịch Khởi Hành - ' . $schedule['tour_name'];
         $view = 'departure-schedule/show';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -162,7 +162,7 @@ class DepartureScheduleController
 
         $title = 'Chỉnh sửa Lịch Khởi Hành';
         $view = 'departure-schedule/edit';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -185,13 +185,13 @@ class DepartureScheduleController
         }
 
         $data = [
-            'tour_id' => (int)($_POST['tour_id'] ?? 0),
+            'tour_id' => (int) ($_POST['tour_id'] ?? 0),
             'departure_date' => $_POST['departure_date'] ?? '',
             'departure_time' => $_POST['departure_time'] ?? '',
             'meeting_point' => trim($_POST['meeting_point'] ?? ''),
             'end_date' => $_POST['end_date'] ?? '',
             'end_time' => $_POST['end_time'] ?? '',
-            'max_participants' => !empty($_POST['max_participants']) ? (int)$_POST['max_participants'] : null,
+            'max_participants' => !empty($_POST['max_participants']) ? (int) $_POST['max_participants'] : null,
             'current_participants' => $schedule['current_participants'],
             'status' => $_POST['status'] ?? 'draft',
             'notes' => trim($_POST['notes'] ?? '')
@@ -277,12 +277,31 @@ class DepartureScheduleController
         // Lấy danh sách HDV
         $guides = $this->guideModel->getAll(['status' => 1]);
 
+        // Kiểm tra xung đột lịch cho từng HDV
+        $guideConflicts = [];
+        foreach ($guides as &$guide) {
+            $conflicts = $this->scheduleModel->checkConflict(
+                $guide['id'],
+                'guide',
+                $schedule['departure_date'],
+                $schedule['end_date'],
+                $scheduleId
+            );
+
+            if (!empty($conflicts)) {
+                $guideConflicts[$guide['id']] = $conflicts;
+                $guide['has_conflict'] = true;
+            } else {
+                $guide['has_conflict'] = false;
+            }
+        }
+
         // Lấy phân bổ HDV hiện tại
         $currentAssignments = $this->assignmentModel->getByScheduleIdAndType($scheduleId, 'guide');
 
         $title = 'Phân bổ Hướng dẫn viên';
         $view = 'departure-schedule/assign-guide';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -309,7 +328,8 @@ class DepartureScheduleController
 
         foreach ($guideIds as $guideId) {
             $guide = $this->guideModel->findById($guideId);
-            if (!$guide) continue;
+            if (!$guide)
+                continue;
 
             // Kiểm tra xung đột lịch
             $conflicts = $this->scheduleModel->checkConflict(
@@ -370,7 +390,7 @@ class DepartureScheduleController
     public function assignService()
     {
         $scheduleId = $_GET['schedule_id'] ?? 0;
-        $serviceType = $_GET['type'] ?? 'vehicle'; // vehicle, hotel, flight, restaurant, attraction
+        $serviceType = $_GET['type'] ?? 'transport'; // transport, hotel, flight, restaurant, attraction
 
         $schedule = $this->scheduleModel->findById($scheduleId);
 
@@ -388,7 +408,7 @@ class DepartureScheduleController
 
         $title = 'Phân bổ Dịch vụ - ' . ucfirst($serviceType);
         $view = 'departure-schedule/assign-service';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -415,10 +435,12 @@ class DepartureScheduleController
         $assignments = [];
 
         foreach ($services as $service) {
-            if (empty($service['supplier_id'])) continue;
+            if (empty($service['supplier_id']))
+                continue;
 
             $supplier = $this->supplierModel->findById($service['supplier_id']);
-            if (!$supplier) continue;
+            if (!$supplier)
+                continue;
 
             $assignments[] = [
                 'schedule_id' => $scheduleId,
@@ -500,8 +522,9 @@ class DepartureScheduleController
     private function sendNotification($scheduleId, $resourceId, $resourceType, $resource, $schedule)
     {
         $notificationType = 'assignment';
-        $recipientType = $resourceType;
-        
+        // Map types to DB enum: guide, driver, staff, supplier, admin
+        $recipientType = ($resourceType === 'guide') ? 'guide' : 'supplier';
+
         $subject = '';
         $message = '';
 
@@ -578,4 +601,61 @@ class DepartureScheduleController
 
         return $errors;
     }
+    /**
+     * Gán khách hàng vào lịch khởi hành
+     */
+    public function assignCustomers()
+    {
+        $scheduleId = $_GET['id'] ?? 0;
+        $schedule = $this->scheduleModel->findById($scheduleId);
+
+        if (!$schedule) {
+            $_SESSION['error'] = 'Không tìm thấy lịch khởi hành!';
+            header('Location: ' . BASE_URL . '?action=departure-schedules');
+            exit;
+        }
+
+        // Lấy danh sách booking chưa xếp lịch của tour này
+        $availableBookings = $this->scheduleModel->getAvailableBookings($schedule['tour_id']);
+
+        // Lấy danh sách booking đã xếp vào lịch này
+        $currentBookings = $this->scheduleModel->getBookingCount($scheduleId); // Chỉ lấy số lượng, cần query lấy list nếu muốn hiển thị chi tiết
+        // Nhưng ở view manage-customers ta sẽ hiển thị list chi tiết.
+        // Tạm thời chỉ hiển thị form chọn booking available.
+
+        $title = 'Xếp khách vào lịch - ' . $schedule['tour_name'];
+        $view = 'departure-schedule/assign-customers'; // Tạo view mới
+        require_once PATH_VIEW_ADMIN . 'main.php';
+    }
+
+    /**
+     * Xử lý gán khách
+     */
+    public function processAssignCustomers()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '?action=departure-schedules');
+            exit;
+        }
+
+        $scheduleId = $_POST['schedule_id'] ?? 0;
+        $bookingIds = $_POST['booking_ids'] ?? [];
+
+        if (empty($bookingIds)) {
+            $_SESSION['error'] = 'Vui lòng chọn ít nhất một booking!';
+            header('Location: ' . BASE_URL . '?action=departure-schedules/assign-customers&id=' . $scheduleId);
+            exit;
+        }
+
+        $result = $this->scheduleModel->addBookings($scheduleId, $bookingIds);
+
+        if ($result) {
+            $_SESSION['success'] = 'Đã thêm khách vào lịch khởi hành!';
+        } else {
+            $_SESSION['error'] = 'Có lỗi xảy ra!';
+        }
+
+        header('Location: ' . BASE_URL . '?action=departure-schedules/show&id=' . $scheduleId);
+    }
 }
+

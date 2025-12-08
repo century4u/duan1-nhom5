@@ -1,7 +1,9 @@
 <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- <h2>Quản lý Đặt Tour</h2> -->
-        <a href="<?= BASE_URL ?>?action=bookings/create" class="btn btn-primary">Đặt Tour Mới</a>
+        <?php if (isAdmin()): ?>
+            <a href="<?= BASE_URL ?>?action=bookings/create" class="btn btn-primary">Đặt Tour Mới</a>
+        <?php endif; ?>
     </div>
 
     <?php if (isset($_SESSION['success'])): ?>
@@ -27,17 +29,17 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Tìm kiếm</label>
-                        <input type="text" class="form-control" name="search" 
-                               value="<?= $_GET['search'] ?? '' ?>" placeholder="Tên tour, mã tour, tên khách...">
+                        <input type="text" class="form-control" name="search" value="<?= $_GET['search'] ?? '' ?>"
+                            placeholder="Tên tour, mã tour, tên khách...">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Trạng thái</label>
                         <select class="form-select" name="status">
                             <option value="">Tất cả</option>
-                            <?php 
+                            <?php
                             $statuses = BookingModel::getStatuses();
-                            foreach ($statuses as $statusKey => $statusLabel): 
-                            ?>
+                            foreach ($statuses as $statusKey => $statusLabel):
+                                ?>
                                 <option value="<?= $statusKey ?>" <?= (isset($_GET['status']) && $_GET['status'] === $statusKey) ? 'selected' : '' ?>>
                                     <?= $statusLabel ?>
                                 </option>
@@ -88,12 +90,14 @@
                                     <td>
                                         <div>
                                             <strong><?= htmlspecialchars($booking['tour_name'] ?? 'N/A') ?></strong><br>
-                                            <small class="text-muted"><?= htmlspecialchars($booking['tour_code'] ?? '') ?></small>
+                                            <small
+                                                class="text-muted"><?= htmlspecialchars($booking['tour_code'] ?? '') ?></small>
                                         </div>
                                     </td>
                                     <td>
                                         <?= htmlspecialchars($booking['customer_name'] ?? 'Khách lẻ') ?><br>
-                                        <small class="text-muted"><?= htmlspecialchars($booking['customer_email'] ?? '') ?></small>
+                                        <small
+                                            class="text-muted"><?= htmlspecialchars($booking['customer_email'] ?? '') ?></small>
                                     </td>
                                     <td><?= $booking['participants_count'] ?? 0 ?> người</td>
                                     <td><?= date('d/m/Y H:i', strtotime($booking['booking_date'])) ?></td>
@@ -114,8 +118,8 @@
                                         <span class="badge bg-<?= $statusColor ?>"><?= $statusLabel ?></span>
                                     </td>
                                     <td>
-                                        <a href="<?= BASE_URL ?>?action=bookings/show&id=<?= $booking['id'] ?>" 
-                                           class="btn btn-sm btn-info">Chi tiết</a>
+                                        <a href="<?= BASE_URL ?>?action=bookings/show&id=<?= $booking['id'] ?>"
+                                            class="btn btn-sm btn-info">Chi tiết</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -126,4 +130,3 @@
         </div>
     </div>
 </div>
-

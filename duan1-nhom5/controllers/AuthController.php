@@ -12,17 +12,26 @@ class AuthController
     /**
      * Hiển thị form đăng nhập
      */
+    /**
+     * Hiển thị form đăng nhập
+     */
     public function login()
     {
-        // Nếu đã đăng nhập, chuyển về trang chủ
+        // Nếu đã đăng nhập, chuyển về trang phù hợp
         if (isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL);
+            $role = strtoupper($_SESSION['role'] ?? '');
+            if ($role === 'ADMIN') {
+                header('Location: ' . BASE_URL . '?action=statistics');
+            } elseif (in_array($role, ['HDV', 'HVD', 'GUIDE'])) {
+                header('Location: ' . BASE_URL . '?action=hvd');
+            } else {
+                header('Location: ' . BASE_URL);
+            }
             exit;
         }
 
         $title = 'Đăng nhập';
-        $view = 'auth/login';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW . 'auth/login.php';
     }
 
     /**
@@ -68,15 +77,28 @@ class AuthController
 
             // Remember me (lưu cookie - tùy chọn)
             if ($remember) {
-                // Có thể tạo token và lưu vào cookie
-                // TODO: Implement remember me với token
+                // TODO: Implement remember me
             }
 
             $_SESSION['success'] = 'Đăng nhập thành công!';
-            
-            // Chuyển hướng về trang trước đó hoặc trang chủ
-            $redirect = $_GET['redirect'] ?? BASE_URL;
-            header('Location: ' . $redirect);
+
+            // Xử lý chuyển hướng dựa trên Role
+            $redirect = $_GET['redirect'] ?? null;
+
+            if ($redirect) {
+                header('Location: ' . $redirect);
+                exit;
+            }
+
+            // Role redirection
+            $role = strtoupper($user['role']);
+            if ($role === 'ADMIN') {
+                header('Location: ' . BASE_URL . '?action=statistics');
+            } elseif ($role === 'HDV' || $role === 'HVD' || $role === 'GUIDE') {
+                header('Location: ' . BASE_URL . '?action=hvd');
+            } else {
+                header('Location: ' . BASE_URL);
+            }
             exit;
         } else {
             $_SESSION['error'] = 'Tên đăng nhập hoặc mật khẩu không đúng!';
@@ -98,10 +120,12 @@ class AuthController
         }
 
         $title = 'Đăng ký';
-        $view = 'auth/register';
-        require_once PATH_VIEW_MAIN;
+        require_once PATH_VIEW . 'auth/register.php';
     }
 
+    /**
+     * Xử lý đăng ký
+     */
     /**
      * Xử lý đăng ký
      */
@@ -112,30 +136,75 @@ class AuthController
             exit;
         }
 
+        $email = trim($_POST['email'] ?? '');
+
+        // Auto-generate username from email
+        $usernameParts = explode('@', $email);
+        $username = $usernameParts[0];
+        // Sanitize username to allow only alphanumeric and underscore (matching current validation)
+        $username = preg_replace('/[^a-zA-Z0-9_]/', '_', $username);
+
+        // Ensure minimum length
+        if (strlen($username) < 3) {
+            $username .= '_' . rand(100, 999);
+        }
+
         $data = [
-            'username' => trim($_POST['username'] ?? ''),
-            'email' => trim($_POST['email'] ?? ''),
+            'username' => $username,
+            'email' => $email,
             'password' => $_POST['password'] ?? '',
             'password_confirm' => $_POST['password_confirm'] ?? '',
-            'full_name' => trim($_POST['full_name'] ?? '')
+            'full_name' => $username // Use username as default display name
         ];
 
         // Validate
         $errors = $this->validateRegister($data);
 
+        // Check Guide Code if provided
+        $guideCode = trim($_POST['guide_code'] ?? '');
+        $guideToLink = null;
+
+        if (!empty($guideCode)) {
+            require_once PATH_MODEL . 'GuideModel.php';
+            $guideModel = new GuideModel();
+            $guideToLink = $guideModel->findUnclaimedByCode($guideCode);
+
+            if (!$guideToLink) {
+                $errors[] = 'Mã HDV không hợp lệ hoặc tài khoản này đã được liên kết!';
+            } else {
+                // Set role intent if guide code is valid
+                $data['role'] = 'HDV'; // Or GUIDE, assuming HDV is supported
+            }
+        }
+
         if (!empty($errors)) {
             $_SESSION['errors'] = $errors;
             $_SESSION['old_data'] = $data;
+            // Preserve guide code in old data if needed, key 'guide_code' is not in $data array above
+            $_SESSION['old_data']['guide_code'] = $guideCode;
             header('Location: ' . BASE_URL . '?action=register');
             exit;
         }
 
         // Kiểm tra username/email đã tồn tại chưa
         if ($this->userModel->exists($data['username'], $data['email'])) {
-            $_SESSION['error'] = 'Tên đăng nhập hoặc email đã tồn tại!';
-            $_SESSION['old_data'] = $data;
-            header('Location: ' . BASE_URL . '?action=register');
-            exit;
+            if ($this->userModel->findByEmail($email)) {
+                $_SESSION['error'] = 'Email đã tồn tại!';
+            } elseif ($this->userModel->findByUsername($username)) {
+                $data['username'] .= '_' . rand(1000, 9999);
+                if ($this->userModel->exists($data['username'], $data['email'])) {
+                    $_SESSION['error'] = 'Tên đăng nhập hoặc email đã tồn tại!';
+                }
+            } else {
+                $_SESSION['error'] = 'Tên đăng nhập hoặc email đã tồn tại!';
+            }
+
+            if (isset($_SESSION['error'])) {
+                $_SESSION['old_data'] = $data;
+                $_SESSION['old_data']['guide_code'] = $guideCode;
+                header('Location: ' . BASE_URL . '?action=register');
+                exit;
+            }
         }
 
         // Mã hóa mật khẩu
@@ -147,19 +216,25 @@ class AuthController
             'email' => $data['email'],
             'password' => $hashedPassword,
             'full_name' => $data['full_name'],
-            'role' => 'USER',
+            'role' => $data['role'] ?? 'USER',
             'status' => 1
         ];
 
         $userId = $this->userModel->create($userData);
 
         if ($userId) {
+            // Link guide if applicable
+            if ($guideToLink) {
+                $guideModel->linkUser($guideToLink['id'], $userId);
+            }
+
             $_SESSION['success'] = 'Đăng ký thành công! Vui lòng đăng nhập.';
             header('Location: ' . BASE_URL . '?action=login');
             exit;
         } else {
             $_SESSION['error'] = 'Có lỗi xảy ra khi đăng ký!';
             $_SESSION['old_data'] = $data;
+            $_SESSION['old_data']['guide_code'] = $guideCode;
             header('Location: ' . BASE_URL . '?action=register');
             exit;
         }
@@ -173,10 +248,10 @@ class AuthController
         // Xóa tất cả session
         session_unset();
         session_destroy();
-        
+
         // Bắt đầu session mới
         session_start();
-        
+
         $_SESSION['success'] = 'Đăng xuất thành công!';
         header('Location: ' . BASE_URL);
         exit;

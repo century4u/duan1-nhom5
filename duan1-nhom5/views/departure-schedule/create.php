@@ -17,9 +17,8 @@
                             <select class="form-select" id="tour_id" name="tour_id" required>
                                 <option value="">-- Chọn Tour --</option>
                                 <?php foreach ($tours as $tour): ?>
-                                    <option value="<?= $tour['id'] ?>" 
-                                            data-duration="<?= $tour['duration'] ?>"
-                                            <?= (isset($_SESSION['old_data']['tour_id']) && $_SESSION['old_data']['tour_id'] == $tour['id']) ? 'selected' : '' ?>>
+                                    <option value="<?= $tour['id'] ?>" data-duration="<?= $tour['duration'] ?>"
+                                        <?= (isset($_SESSION['old_data']['tour_id']) && $_SESSION['old_data']['tour_id'] == $tour['id']) ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($tour['code'] . ' - ' . $tour['name']) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -29,41 +28,46 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="departure_date" class="form-label">Ngày khởi hành <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="departure_date" name="departure_date" 
-                                           value="<?= $_SESSION['old_data']['departure_date'] ?? '' ?>" 
-                                           min="<?= date('Y-m-d') ?>" required>
+                                    <label for="departure_date" class="form-label">Ngày khởi hành <span
+                                            class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="departure_date" name="departure_date"
+                                        value="<?= $_SESSION['old_data']['departure_date'] ?? '' ?>"
+                                        min="<?= date('Y-m-d') ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="departure_time" class="form-label">Giờ khởi hành <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" id="departure_time" name="departure_time" 
-                                           value="<?= $_SESSION['old_data']['departure_time'] ?? '08:00' ?>" required>
+                                    <label for="departure_time" class="form-label">Giờ khởi hành <span
+                                            class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="departure_time" name="departure_time"
+                                        value="<?= $_SESSION['old_data']['departure_time'] ?? '08:00' ?>" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="meeting_point" class="form-label">Điểm tập trung <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="meeting_point" name="meeting_point" 
-                                   value="<?= htmlspecialchars($_SESSION['old_data']['meeting_point'] ?? '') ?>" 
-                                   placeholder="Ví dụ: Sân bay Nội Bài, Ga Hà Nội..." required>
+                            <label for="meeting_point" class="form-label">Điểm tập trung <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="meeting_point" name="meeting_point"
+                                value="<?= htmlspecialchars($_SESSION['old_data']['meeting_point'] ?? '') ?>"
+                                placeholder="Ví dụ: Sân bay Nội Bài, Ga Hà Nội..." required>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="end_date" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="end_date" name="end_date" 
-                                           value="<?= $_SESSION['old_data']['end_date'] ?? '' ?>" required>
+                                    <label for="end_date" class="form-label">Ngày kết thúc <span
+                                            class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date"
+                                        value="<?= $_SESSION['old_data']['end_date'] ?? '' ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="end_time" class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" id="end_time" name="end_time" 
-                                           value="<?= $_SESSION['old_data']['end_time'] ?? '18:00' ?>" required>
+                                    <label for="end_time" class="form-label">Giờ kết thúc <span
+                                            class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="end_time" name="end_time"
+                                        value="<?= $_SESSION['old_data']['end_time'] ?? '18:00' ?>" required>
                                 </div>
                             </div>
                         </div>
@@ -72,17 +76,20 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="max_participants" class="form-label">Số lượng tối đa</label>
-                                    <input type="number" class="form-control" id="max_participants" name="max_participants" 
-                                           value="<?= $_SESSION['old_data']['max_participants'] ?? '' ?>" 
-                                           min="1" placeholder="Để trống nếu không giới hạn">
+                                    <input type="number" class="form-control" id="max_participants"
+                                        name="max_participants"
+                                        value="<?= $_SESSION['old_data']['max_participants'] ?? '' ?>" min="1"
+                                        placeholder="Để trống nếu không giới hạn">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Trạng thái</label>
                                     <select class="form-select" id="status" name="status">
-                                        <option value="draft" <?= (isset($_SESSION['old_data']['status']) && $_SESSION['old_data']['status'] == 'draft') ? 'selected' : 'selected' ?>>Nháp</option>
-                                        <option value="confirmed" <?= (isset($_SESSION['old_data']['status']) && $_SESSION['old_data']['status'] == 'confirmed') ? 'selected' : '' ?>>Đã xác nhận</option>
+                                        <option value="draft" <?= (isset($_SESSION['old_data']['status']) && $_SESSION['old_data']['status'] == 'draft') ? 'selected' : 'selected' ?>>Nháp
+                                        </option>
+                                        <option value="confirmed" <?= (isset($_SESSION['old_data']['status']) && $_SESSION['old_data']['status'] == 'confirmed') ? 'selected' : '' ?>>Đã xác
+                                            nhận</option>
                                     </select>
                                 </div>
                             </div>
@@ -90,8 +97,8 @@
 
                         <div class="mb-3">
                             <label for="notes" class="form-label">Ghi chú</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="3" 
-                                      placeholder="Ghi chú về lịch khởi hành..."><?= htmlspecialchars($_SESSION['old_data']['notes'] ?? '') ?></textarea>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"
+                                placeholder="Ghi chú về lịch khởi hành..."><?= htmlspecialchars($_SESSION['old_data']['notes'] ?? '') ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -123,33 +130,42 @@
 </div>
 
 <script>
-// Tự động tính ngày kết thúc dựa trên duration của tour
-document.getElementById('tour_id').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const duration = parseInt(selectedOption.getAttribute('data-duration')) || 0;
-    const departureDate = document.getElementById('departure_date').value;
-    
-    if (departureDate && duration > 0) {
-        const startDate = new Date(departureDate);
-        startDate.setDate(startDate.getDate() + duration - 1);
-        document.getElementById('end_date').value = startDate.toISOString().split('T')[0];
-    }
-});
+    // Tự động tính ngày kết thúc dựa trên duration của tour
+    function updateEndDate() {
+        const tourSelect = document.getElementById('tour_id');
+        const selectedOption = tourSelect.options[tourSelect.selectedIndex];
+        const duration = parseInt(selectedOption.getAttribute('data-duration')) || 0;
+        const departureDate = document.getElementById('departure_date').value;
 
-// Validate form
-document.getElementById('scheduleForm').addEventListener('submit', function(e) {
-    const departureDate = document.getElementById('departure_date').value;
-    const endDate = document.getElementById('end_date').value;
-    
-    if (departureDate && endDate) {
-        if (new Date(endDate) < new Date(departureDate)) {
-            e.preventDefault();
-            alert('Ngày kết thúc phải sau ngày khởi hành!');
-            return false;
+        if (departureDate && duration > 0) {
+            const startDate = new Date(departureDate);
+            startDate.setDate(startDate.getDate() + duration - 1); // Trừ 1 vì ngày khởi hành tính là ngày 1
+
+            // Format YYYY-MM-DD
+            const yyyy = startDate.getFullYear();
+            const mm = String(startDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(startDate.getDate()).padStart(2, '0');
+
+            document.getElementById('end_date').value = `${yyyy}-${mm}-${dd}`;
         }
     }
-});
+
+    document.getElementById('tour_id').addEventListener('change', updateEndDate);
+    document.getElementById('departure_date').addEventListener('change', updateEndDate);
+
+    // Validate form
+    document.getElementById('scheduleForm').addEventListener('submit', function (e) {
+        const departureDate = document.getElementById('departure_date').value;
+        const endDate = document.getElementById('end_date').value;
+
+        if (departureDate && endDate) {
+            if (new Date(endDate) < new Date(departureDate)) {
+                e.preventDefault();
+                alert('Ngày kết thúc phải sau ngày khởi hành!');
+                return false;
+            }
+        }
+    });
 </script>
 
 <?php unset($_SESSION['old_data']); ?>
-

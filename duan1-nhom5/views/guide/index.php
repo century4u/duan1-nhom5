@@ -1,7 +1,9 @@
 <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- <h2>Quản lý Hướng dẫn viên</h2> -->
-        <a href="<?= BASE_URL ?>?action=guides/create" class="btn btn-primary">Thêm HDV Mới</a>
+        <?php if (isAdmin()): ?>
+            <a href="<?= BASE_URL ?>?action=guides/create" class="btn btn-primary">Thêm HDV Mới</a>
+        <?php endif; ?>
     </div>
 
     <?php if (isset($_SESSION['success'])): ?>
@@ -27,8 +29,8 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Tìm kiếm</label>
-                        <input type="text" class="form-control" name="search" 
-                               value="<?= $_GET['search'] ?? '' ?>" placeholder="Tên, mã, email, SĐT...">
+                        <input type="text" class="form-control" name="search" value="<?= $_GET['search'] ?? '' ?>"
+                            placeholder="Tên, mã, email, SĐT...">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Chuyên môn</label>
@@ -45,8 +47,10 @@
                         <label class="form-label">Trạng thái</label>
                         <select class="form-select" name="status">
                             <option value="">Tất cả</option>
-                            <option value="1" <?= (isset($_GET['status']) && $_GET['status'] == '1') ? 'selected' : '' ?>>Hoạt động</option>
-                            <option value="0" <?= (isset($_GET['status']) && $_GET['status'] == '0') ? 'selected' : '' ?>>Không hoạt động</option>
+                            <option value="1" <?= (isset($_GET['status']) && $_GET['status'] == '1') ? 'selected' : '' ?>>
+                                Hoạt động</option>
+                            <option value="0" <?= (isset($_GET['status']) && $_GET['status'] == '0') ? 'selected' : '' ?>>
+                                Không hoạt động</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -88,19 +92,21 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <?php if (!empty($guide['avatar'])): ?>
-                                                <img src="<?= BASE_ASSETS_UPLOADS . $guide['avatar'] ?>" 
-                                                     alt="Avatar" class="rounded-circle me-2" 
-                                                     style="width: 40px; height: 40px; object-fit: cover;">
+                                                <img src="<?= BASE_ASSETS_UPLOADS . $guide['avatar'] ?>" alt="Avatar"
+                                                    class="rounded-circle me-2"
+                                                    style="width: 40px; height: 40px; object-fit: cover;">
                                             <?php else: ?>
-                                                <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center" 
-                                                     style="width: 40px; height: 40px;">
-                                                    <span class="text-white"><?= strtoupper(substr($guide['full_name'], 0, 1)) ?></span>
+                                                <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                                    style="width: 40px; height: 40px;">
+                                                    <span
+                                                        class="text-white"><?= strtoupper(substr($guide['full_name'], 0, 1)) ?></span>
                                                 </div>
                                             <?php endif; ?>
                                             <div>
                                                 <strong><?= htmlspecialchars($guide['full_name']) ?></strong>
                                                 <?php if ($guide['birthdate']): ?>
-                                                    <br><small class="text-muted"><?= date('d/m/Y', strtotime($guide['birthdate'])) ?></small>
+                                                    <br><small
+                                                        class="text-muted"><?= date('d/m/Y', strtotime($guide['birthdate'])) ?></small>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
@@ -112,13 +118,14 @@
                                     </td>
                                     <td>
                                         <?php if (!empty($guide['languages_array'])): ?>
-                                            <?php 
+                                            <?php
                                             $langNames = [];
                                             foreach ($guide['languages_array'] as $lang) {
                                                 $langNames[] = $lang;
                                             }
                                             echo implode(', ', array_slice($langNames, 0, 2));
-                                            if (count($langNames) > 2) echo '...';
+                                            if (count($langNames) > 2)
+                                                echo '...';
                                             ?>
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
@@ -148,13 +155,16 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <a href="<?= BASE_URL ?>?action=guides/show&id=<?= $guide['id'] ?>" 
-                                           class="btn btn-sm btn-info">Chi tiết</a>
-                                        <a href="<?= BASE_URL ?>?action=guides/edit&id=<?= $guide['id'] ?>" 
-                                           class="btn btn-sm btn-warning">Sửa</a>
-                                        <a href="<?= BASE_URL ?>?action=guides/delete&id=<?= $guide['id'] ?>" 
-                                           class="btn btn-sm btn-danger"
-                                           onclick="return confirm('Bạn có chắc chắn muốn xóa HDV này?')">Xóa</a>
+                                    <td>
+                                        <a href="<?= BASE_URL ?>?action=guides/show&id=<?= $guide['id'] ?>"
+                                            class="btn btn-sm btn-info">Chi tiết</a>
+                                        <?php if (isAdmin()): ?>
+                                            <a href="<?= BASE_URL ?>?action=guides/edit&id=<?= $guide['id'] ?>"
+                                                class="btn btn-sm btn-warning">Sửa</a>
+                                            <a href="<?= BASE_URL ?>?action=guides/delete&id=<?= $guide['id'] ?>"
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Bạn có chắc chắn muốn xóa HDV này?')">Xóa</a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -165,4 +175,3 @@
         </div>
     </div>
 </div>
-

@@ -58,7 +58,7 @@ class ScheduleAssignmentModel extends BaseModel
                 (:schedule_id, :assignment_type, :resource_id, :resource_name,
                  :resource_type, :quantity, :start_date, :end_date,
                  :start_time, :end_time, :location, :status, :notes)";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'schedule_id' => $data['schedule_id'],
@@ -97,7 +97,7 @@ class ScheduleAssignmentModel extends BaseModel
                 status = :status,
                 notes = :notes
                 WHERE id = :id";
-        
+
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             'id' => $id,
@@ -124,7 +124,7 @@ class ScheduleAssignmentModel extends BaseModel
                 status = :status,
                 confirmation_date = :confirmation_date
                 WHERE id = :id";
-        
+
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             'id' => $id,
@@ -181,5 +181,39 @@ class ScheduleAssignmentModel extends BaseModel
             $results[] = $this->create($assignment);
         }
         return $results;
+    }
+
+    /**
+     * Lấy lịch được phân công cho HDV
+     */
+    public function getGuideSchedules($guideId, $filters = [])
+    {
+        $sql = "SELECT sa.*, ds.*, t.name as tour_name, t.code as tour_code, t.duration,
+                       t.departure_location, t.destination
+                FROM {$this->table} sa
+                INNER JOIN departure_schedules ds ON sa.schedule_id = ds.id
+                INNER JOIN tours t ON ds.tour_id = t.id
+                WHERE sa.assignment_type = 'guide'
+                  AND sa.resource_id = :guide_id";
+
+        $params = ['guide_id' => $guideId];
+
+        // Filter theo tháng
+        if (!empty($filters['month'])) {
+            $sql .= " AND DATE_FORMAT(ds.departure_date, '%Y-%m') = :month";
+            $params['month'] = $filters['month'];
+        }
+
+        // Filter theo trạng thái
+        if (!empty($filters['status'])) {
+            $sql .= " AND sa.status = :status";
+            $params['status'] = $filters['status'];
+        }
+
+        $sql .= " ORDER BY ds.departure_date ASC, ds.departure_time ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 }

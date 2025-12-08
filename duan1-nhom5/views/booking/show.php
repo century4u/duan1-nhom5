@@ -14,14 +14,14 @@
             <h2>Chi tiết Đặt Tour #<?= $booking['id'] ?></h2>
             <p class="text-muted mb-0">
                 <span class="badge bg-<?php
-                    $statusColors = [
-                        'pending' => 'warning',
-                        'deposit' => 'info',
-                        'confirmed' => 'success',
-                        'completed' => 'primary',
-                        'cancelled' => 'danger'
-                    ];
-                    echo $statusColors[$booking['status']] ?? 'secondary';
+                $statusColors = [
+                    'pending' => 'warning',
+                    'deposit' => 'info',
+                    'confirmed' => 'success',
+                    'completed' => 'primary',
+                    'cancelled' => 'danger'
+                ];
+                echo $statusColors[$booking['status']] ?? 'secondary';
                 ?>">
                     <?php
                     $statusLabels = BookingModel::getStatuses();
@@ -54,13 +54,14 @@
                 <div class="col-md-6">
                     <p><strong>Tên tour:</strong> <?= htmlspecialchars($booking['tour_name'] ?? 'N/A') ?></p>
                     <p><strong>Mã tour:</strong> <?= htmlspecialchars($booking['tour_code'] ?? 'N/A') ?></p>
-                    <p><strong>Điểm khởi hành:</strong> <?= htmlspecialchars($booking['departure_location'] ?? 'N/A') ?></p>
+                    <p><strong>Điểm khởi hành:</strong> <?= htmlspecialchars($booking['departure_location'] ?? 'N/A') ?>
+                    </p>
                     <p><strong>Điểm đến:</strong> <?= htmlspecialchars($booking['destination'] ?? 'N/A') ?></p>
                 </div>
                 <div class="col-md-6">
                     <p><strong>Thời gian:</strong> <?= $booking['duration'] ?? 'N/A' ?> ngày</p>
                     <p><strong>Số người tối đa:</strong> <?= $booking['max_participants'] ?? 'Không giới hạn' ?></p>
-                    <p><strong>Loại booking:</strong> 
+                    <p><strong>Loại booking:</strong>
                         <span class="badge bg-<?= $booking['booking_type'] === 'group' ? 'info' : 'secondary' ?>">
                             <?= $booking['booking_type'] === 'group' ? 'Đoàn' : 'Khách lẻ' ?>
                         </span>
@@ -99,45 +100,92 @@
             <?php if (empty($booking['participants'])): ?>
                 <p class="text-muted text-center">Chưa có thông tin khách hàng</p>
             <?php else: ?>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Họ và tên</th>
-                                <th>Giới tính</th>
-                                <th>Ngày sinh</th>
-                                <th>Tuổi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($booking['participants'] as $index => $participant): ?>
-                                <tr>
-                                    <td><?= $index + 1 ?></td>
-                                    <td><strong><?= htmlspecialchars($participant['fullname']) ?></strong></td>
-                                    <td>
-                                        <?php
-                                        $genderLabels = ['male' => 'Nam', 'female' => 'Nữ', 'other' => 'Khác'];
-                                        echo $genderLabels[$participant['gender']] ?? 'N/A';
-                                        ?>
-                                    </td>
-                                    <td><?= $participant['birthdate'] ? date('d/m/Y', strtotime($participant['birthdate'])) : 'N/A' ?></td>
-                                    <td>
-                                        <?php
-                                        if ($participant['birthdate']) {
-                                            $birth = new DateTime($participant['birthdate']);
-                                            $today = new DateTime();
-                                            $age = $today->diff($birth)->y;
-                                            echo $age . ' tuổi';
-                                        } else {
-                                            echo 'N/A';
-                                        }
-                                        ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                <div class="row">
+                    <?php foreach ($booking['participants'] as $index => $participant): ?>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-person-fill"></i>
+                                        <strong><?= htmlspecialchars($participant['fullname']) ?></strong>
+                                        <span class="badge bg-secondary ms-2">Khách #<?= $index + 1 ?></span>
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Thông tin cơ bản -->
+                                    <div class="mb-3">
+                                        <p class="mb-1">
+                                            <strong>Giới tính:</strong>
+                                            <?php
+                                            $genderLabels = ['male' => 'Nam', 'female' => 'Nữ', 'other' => 'Khác'];
+                                            echo $genderLabels[$participant['gender']] ?? 'N/A';
+                                            ?>
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Ngày sinh:</strong>
+                                            <?= $participant['birthdate'] ? date('d/m/Y', strtotime($participant['birthdate'])) : 'N/A' ?>
+                                        </p>
+                                        <p class="mb-0">
+                                            <strong>Tuổi:</strong>
+                                            <?php
+                                            if ($participant['birthdate']) {
+                                                $birth = new DateTime($participant['birthdate']);
+                                                $today = new DateTime();
+                                                $age = $today->diff($birth)->y;
+                                                echo $age . ' tuổi';
+                                            } else {
+                                                echo 'N/A';
+                                            }
+                                            ?>
+                                        </p>
+                                    </div>
+
+                                    <!-- Ghi chú đặc biệt -->
+                                    <?php
+                                    $hasSpecialNotes = !empty($participant['dietary_restrictions']) ||
+                                        !empty($participant['medical_conditions']) ||
+                                        !empty($participant['special_requirements']);
+                                    ?>
+
+                                    <?php if ($hasSpecialNotes): ?>
+                                        <hr>
+                                        <h6 class="text-primary mb-2">
+                                            <i class="bi bi-exclamation-circle-fill"></i> Ghi chú đặc biệt
+                                        </h6>
+
+                                        <?php if (!empty($participant['dietary_restrictions'])): ?>
+                                            <div class="alert alert-success py-2 mb-2">
+                                                <strong><i class="bi bi-egg-fried"></i> Hạn chế ăn uống:</strong><br>
+                                                <span
+                                                    class="ms-3"><?= nl2br(htmlspecialchars($participant['dietary_restrictions'])) ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if (!empty($participant['medical_conditions'])): ?>
+                                            <div class="alert alert-danger py-2 mb-2">
+                                                <strong><i class="bi bi-heart-pulse"></i> Tình trạng sức khỏe:</strong><br>
+                                                <span
+                                                    class="ms-3"><?= nl2br(htmlspecialchars($participant['medical_conditions'])) ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if (!empty($participant['special_requirements'])): ?>
+                                            <div class="alert alert-warning py-2 mb-2">
+                                                <strong><i class="bi bi-star"></i> Yêu cầu đặc biệt:</strong><br>
+                                                <span
+                                                    class="ms-3"><?= nl2br(htmlspecialchars($participant['special_requirements'])) ?></span>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <hr>
+                                        <p class="text-muted mb-0">
+                                            <i class="bi bi-info-circle"></i> Không có yêu cầu đặc biệt
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -152,11 +200,14 @@
             <div class="row">
                 <div class="col-md-6">
                     <p><strong>Số lượng khách:</strong> <?= $booking['participants_count'] ?> người</p>
-                    <p><strong>Giá mỗi người:</strong> <?= number_format($booking['total_price'] / max($booking['participants_count'], 1), 0, ',', '.') ?> đ</p>
+                    <p><strong>Giá mỗi người:</strong>
+                        <?= number_format($booking['total_price'] / max($booking['participants_count'], 1), 0, ',', '.') ?>
+                        đ</p>
                 </div>
                 <div class="col-md-6">
                     <p class="text-end">
-                        <strong class="fs-4 text-danger">Tổng giá: <?= number_format($booking['total_price'], 0, ',', '.') ?> đ</strong>
+                        <strong class="fs-4 text-danger">Tổng giá:
+                            <?= number_format($booking['total_price'], 0, ',', '.') ?> đ</strong>
                     </p>
                 </div>
             </div>
@@ -164,10 +215,13 @@
                 <hr>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Số tiền đã cọc:</strong> <span class="text-info"><?= number_format($booking['deposit_amount'], 0, ',', '.') ?> đ</span></p>
+                        <p><strong>Số tiền đã cọc:</strong> <span
+                                class="text-info"><?= number_format($booking['deposit_amount'], 0, ',', '.') ?> đ</span></p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Còn lại:</strong> <span class="text-danger"><?= number_format($booking['total_price'] - $booking['deposit_amount'], 0, ',', '.') ?> đ</span></p>
+                        <p><strong>Còn lại:</strong> <span
+                                class="text-danger"><?= number_format($booking['total_price'] - $booking['deposit_amount'], 0, ',', '.') ?>
+                                đ</span></p>
                     </div>
                 </div>
             <?php endif; ?>
@@ -183,7 +237,7 @@
             <div class="card-body">
                 <form method="POST" action="<?= BASE_URL ?>?action=bookings/update-status">
                     <input type="hidden" name="id" value="<?= $booking['id'] ?>">
-                    
+
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="status" class="form-label">Trạng thái mới <span class="text-danger">*</span></label>
@@ -195,26 +249,27 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3" id="depositAmountField" style="display: none;">
-                            <label for="deposit_amount" class="form-label">Số tiền cọc <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="deposit_amount" name="deposit_amount" 
-                                   min="0" max="<?= $booking['total_price'] ?>" step="1000"
-                                   placeholder="Nhập số tiền cọc">
-                            <small class="text-muted">Tổng giá: <?= number_format($booking['total_price'], 0, ',', '.') ?> đ</small>
+                            <label for="deposit_amount" class="form-label">Số tiền cọc <span
+                                    class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="deposit_amount" name="deposit_amount" min="0"
+                                max="<?= $booking['total_price'] ?>" step="1000" placeholder="Nhập số tiền cọc">
+                            <small class="text-muted">Tổng giá: <?= number_format($booking['total_price'], 0, ',', '.') ?>
+                                đ</small>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="change_reason" class="form-label">Lý do thay đổi</label>
-                        <input type="text" class="form-control" id="change_reason" name="change_reason" 
-                               placeholder="Ví dụ: Khách hàng đã thanh toán cọc">
+                        <input type="text" class="form-control" id="change_reason" name="change_reason"
+                            placeholder="Ví dụ: Khách hàng đã thanh toán cọc">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="notes" class="form-label">Ghi chú</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="3" 
-                                  placeholder="Ghi chú thêm về việc thay đổi trạng thái..."></textarea>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"
+                            placeholder="Ghi chú thêm về việc thay đổi trạng thái..."></textarea>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-primary">Cập nhật trạng thái</button>
                 </form>
             </div>
@@ -237,20 +292,22 @@
                 <p class="text-muted text-center">Chưa có lịch sử thay đổi trạng thái</p>
             <?php else: ?>
                 <div class="timeline">
-                    <?php 
+                    <?php
                     $statusLabels = BookingModel::getStatuses();
-                    foreach ($booking['status_history'] as $history): 
-                    ?>
+                    foreach ($booking['status_history'] as $history):
+                        ?>
                         <div class="card mb-3 border-start border-4 border-primary">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div>
                                         <h6 class="card-title mb-1">
                                             <?php if ($history['old_status']): ?>
-                                                <span class="badge bg-secondary"><?= $statusLabels[$history['old_status']] ?? $history['old_status'] ?></span>
+                                                <span
+                                                    class="badge bg-secondary"><?= $statusLabels[$history['old_status']] ?? $history['old_status'] ?></span>
                                                 <i class="bi bi-arrow-right"></i>
                                             <?php endif; ?>
-                                            <span class="badge bg-primary"><?= $statusLabels[$history['new_status']] ?? $history['new_status'] ?></span>
+                                            <span
+                                                class="badge bg-primary"><?= $statusLabels[$history['new_status']] ?? $history['new_status'] ?></span>
                                         </h6>
                                         <small class="text-muted">
                                             <?= date('d/m/Y H:i:s', strtotime($history['created_at'])) ?>
@@ -260,11 +317,11 @@
                                         </small>
                                     </div>
                                 </div>
-                                
+
                                 <?php if (!empty($history['change_reason'])): ?>
                                     <p class="mb-1"><strong>Lý do:</strong> <?= htmlspecialchars($history['change_reason']) ?></p>
                                 <?php endif; ?>
-                                
+
                                 <?php if (!empty($history['notes'])): ?>
                                     <p class="mb-0 text-muted"><small><?= nl2br(htmlspecialchars($history['notes'])) ?></small></p>
                                 <?php endif; ?>
@@ -278,34 +335,34 @@
 </div>
 
 <script>
-function toggleDepositField() {
-    const statusSelect = document.getElementById('status');
-    const depositField = document.getElementById('depositAmountField');
-    const depositInput = document.getElementById('deposit_amount');
-    
-    if (statusSelect.value === 'deposit') {
-        depositField.style.display = 'block';
-        depositInput.required = true;
-    } else {
-        depositField.style.display = 'none';
-        depositInput.required = false;
-        depositInput.value = '';
+    function toggleDepositField() {
+        const statusSelect = document.getElementById('status');
+        const depositField = document.getElementById('depositAmountField');
+        const depositInput = document.getElementById('deposit_amount');
+
+        if (statusSelect.value === 'deposit') {
+            depositField.style.display = 'block';
+            depositInput.required = true;
+        } else {
+            depositField.style.display = 'none';
+            depositInput.required = false;
+            depositInput.value = '';
+        }
     }
-}
 </script>
 
 <style>
-.timeline .card {
-    position: relative;
-}
-.timeline .card::before {
-    content: '';
-    position: absolute;
-    left: -2px;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: #0d6efd;
-}
-</style>
+    .timeline .card {
+        position: relative;
+    }
 
+    .timeline .card::before {
+        content: '';
+        position: absolute;
+        left: -2px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #0d6efd;
+    }
+</style>

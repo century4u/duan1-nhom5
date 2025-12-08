@@ -29,12 +29,12 @@ class BookingController
         ];
 
         // Loại bỏ các filter rỗng
-        $filters = array_filter($filters, function($value) {
+        $filters = array_filter($filters, function ($value) {
             return $value !== '' && $value !== null;
         });
 
         $bookings = $this->bookingModel->getAll($filters);
-        
+
         // Lấy thông tin chi tiết cho mỗi booking
         foreach ($bookings as &$booking) {
             $booking['participants_count'] = $this->bookingDetailModel->countByBookingId($booking['id']);
@@ -42,7 +42,7 @@ class BookingController
 
         $title = 'Quản lý Đặt Tour';
         $view = 'booking/index';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -50,28 +50,32 @@ class BookingController
      */
     public function create()
     {
-        $tourId = $_GET['tour_id'] ?? 0;
-        $tour = null;
-        
-        if ($tourId) {
-            $tour = $this->tourModel->findById($tourId);
-            if (!$tour) {
-                $_SESSION['error'] = 'Không tìm thấy tour!';
-                header('Location: ' . BASE_URL . '?action=tours');
-                exit;
-            }
-
-            // Kiểm tra chỗ trống
-            $availability = $this->bookingModel->checkAvailableSlots($tourId);
-            if (!$availability['available']) {
-                $_SESSION['error'] = 'Tour đã hết chỗ!';
-                header('Location: ' . BASE_URL . '?action=tours/show&id=' . $tourId);
-                exit;
-            }
-        }
-
         // Lấy danh sách tour đang hoạt động
         $tours = $this->tourModel->getAll(['status' => 1]);
+
+        // Lấy lịch khởi hành sắp tới
+        $scheduleModel = new DepartureScheduleModel();
+        $departureSchedules = $scheduleModel->getUpcoming();
+
+        // Với mỗi lịch, lấy HDV được phân công và số chỗ còn trống
+        foreach ($departureSchedules as &$schedule) {
+            // Lấy HDV
+            $schedule['guides'] = $scheduleModel->getAssignedGuides($schedule['id']);
+
+            // Đếm booking cho mỗi HDV
+            foreach ($schedule['guides'] as &$guide) {
+                $guide['booking_count'] = $scheduleModel->countBookingsByGuide($schedule['id'], $guide['id']);
+            }
+
+            // Tính số chỗ còn trống
+            $totalBooked = $scheduleModel->getBookingCount($schedule['id']);
+            $maxSlots = $schedule['max_participants'] ?? 999;
+            $schedule['available_slots'] = max(0, $maxSlots - $totalBooked);
+        }
+
+        // Lấy danh sách tất cả HDV (từ chức năng quản lý HDV)
+        $guideModel = new GuideModel();
+        $guides = $guideModel->getAll(['status' => 1]);
 
         $title = 'Đặt Tour Mới';
         $view = 'booking/create';
@@ -89,9 +93,11 @@ class BookingController
         }
 
         $data = [
-            'tour_id' => (int)($_POST['tour_id'] ?? 0),
-            'user_id' => !empty($_POST['user_id']) ? (int)$_POST['user_id'] : null,
-            'booking_type' => $_POST['booking_type'] ?? 'individual', // individual hoặc group
+            'tour_id' => (int) ($_POST['tour_id'] ?? 0),
+            'departure_schedule_id' => (int) ($_POST['departure_schedule_id'] ?? 0),
+            'guide_id' => !empty($_POST['guide_id']) ? (int) $_POST['guide_id'] : null,
+            'user_id' => !empty($_POST['user_id']) ? (int) $_POST['user_id'] : null,
+            'booking_type' => $_POST['booking_type'] ?? 'individual',
             'contact_name' => $_POST['contact_name'] ?? '',
             'contact_email' => $_POST['contact_email'] ?? '',
             'contact_phone' => $_POST['contact_phone'] ?? '',
@@ -109,39 +115,38 @@ class BookingController
             exit;
         }
 
-        // Kiểm tra tour tồn tại
-        $tour = $this->tourModel->findById($data['tour_id']);
-        if (!$tour) {
-            $_SESSION['error'] = 'Không tìm thấy tour!';
+        // Kiểm tra lịch khởi hành
+        $scheduleModel = new DepartureScheduleModel();
+        $schedule = $scheduleModel->findById($data['departure_schedule_id']);
+        if (!$schedule) {
+            $_SESSION['error'] = 'Không tìm thấy lịch khởi hành!';
             header('Location: ' . BASE_URL . '?action=bookings/create');
             exit;
         }
 
         // Kiểm tra chỗ trống
-        $availability = $this->bookingModel->checkAvailableSlots($data['tour_id']);
         $participantsCount = count($data['participants']);
-        
-        if (!$availability['available']) {
-            $_SESSION['error'] = 'Tour đã hết chỗ!';
-            header('Location: ' . BASE_URL . '?action=bookings/create&tour_id=' . $data['tour_id']);
+        $totalBooked = $scheduleModel->getBookingCount($data['departure_schedule_id']);
+        $maxSlots = $schedule['max_participants'] ?? 999;
+        $availableSlots = max(0, $maxSlots - $totalBooked);
+
+        if ($availableSlots < $participantsCount) {
+            $_SESSION['error'] = 'Số chỗ còn lại không đủ! Chỉ còn ' . $availableSlots . ' chỗ.';
+            header('Location: ' . BASE_URL . '?action=bookings/create');
             exit;
         }
 
-        if ($availability['available_slots'] < $participantsCount) {
-            $_SESSION['error'] = 'Số chỗ còn lại không đủ! Chỉ còn ' . $availability['available_slots'] . ' chỗ.';
-            header('Location: ' . BASE_URL . '?action=bookings/create&tour_id=' . $data['tour_id']);
-            exit;
-        }
-
-        // Tính tổng giá
-        $totalPrice = $this->calculateTotalPrice($data['tour_id'], $data['participants']);
+        // Tính tổng giá  
+        $totalPrice = $this->calculateTotalPrice($schedule['tour_id'], $data['participants']);
 
         // Tạo booking
         $bookingData = [
-            'tour_id' => $data['tour_id'],
+            'tour_id' => $schedule['tour_id'],
+            'departure_schedule_id' => $data['departure_schedule_id'],
+            'guide_id' => $data['guide_id'],
             'user_id' => $data['user_id'],
             'total_price' => $totalPrice,
-            'status' => 'pending' // Tạm thời, chờ xác nhận
+            'status' => 'pending'
         ];
 
         $bookingId = $this->bookingModel->create($bookingData);
@@ -198,7 +203,7 @@ class BookingController
 
         $title = 'Chi tiết Đặt Tour #' . $booking['id'];
         $view = 'booking/show';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -211,9 +216,9 @@ class BookingController
             exit;
         }
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int) ($_POST['id'] ?? 0);
         $newStatus = $_POST['status'] ?? '';
-        $depositAmount = !empty($_POST['deposit_amount']) ? (float)$_POST['deposit_amount'] : null;
+        $depositAmount = !empty($_POST['deposit_amount']) ? (float) $_POST['deposit_amount'] : null;
         $changeReason = $_POST['change_reason'] ?? '';
         $notes = $_POST['notes'] ?? '';
 
@@ -296,7 +301,7 @@ class BookingController
         foreach ($participants as $participant) {
             $birthdate = $participant['birthdate'] ?? null;
             $age = null;
-            
+
             if ($birthdate) {
                 $birth = new DateTime($birthdate);
                 $today = new DateTime();

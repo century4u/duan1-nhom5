@@ -14,7 +14,7 @@ class DepartureScheduleModel extends BaseModel
                 FROM {$this->table} ds
                 LEFT JOIN tours t ON ds.tour_id = t.id
                 WHERE 1=1";
-        
+
         $params = [];
 
         if (!empty($filters['tour_id'])) {
@@ -78,7 +78,7 @@ class DepartureScheduleModel extends BaseModel
                 (:tour_id, :departure_date, :departure_time, :meeting_point,
                  :end_date, :end_time, :max_participants, :current_participants,
                  :status, :notes)";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'tour_id' => $data['tour_id'],
@@ -113,7 +113,7 @@ class DepartureScheduleModel extends BaseModel
                 status = :status,
                 notes = :notes
                 WHERE id = :id";
-        
+
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             'id' => $id,
@@ -201,7 +201,7 @@ class DepartureScheduleModel extends BaseModel
                       OR (ds.departure_date <= :end_date AND ds.end_date >= :end_date)
                       OR (ds.departure_date >= :start_date AND ds.end_date <= :end_date)
                   )";
-        
+
         $params = [
             'resource_id' => $resourceId,
             'assignment_type' => $resourceType,
@@ -220,6 +220,65 @@ class DepartureScheduleModel extends BaseModel
     }
 
     /**
+     * Lấy lịch khởi hành sắp tới (cho booking)
+     */
+    public function getUpcoming($limit = 500)
+    {
+        $sql = "SELECT ds.*, t.name as tour_name, t.code as tour_code, 
+                       t.price, t.duration, t.max_participants, t.destination
+                FROM {$this->table} ds
+                INNER JOIN tours t ON ds.tour_id = t.id
+                WHERE ds.departure_date >= CURDATE()
+                  AND ds.status = 'confirmed'
+                ORDER BY ds.departure_date ASC, ds.departure_time ASC
+                LIMIT :limit";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Lấy danh sách HDV được phân cho 1 lịch
+     */
+    public function getAssignedGuides($scheduleId)
+    {
+        $sql = "SELECT g.*, sa.id as assignment_id, sa.status as assignment_status,
+                       sa.notes as assignment_notes
+                FROM schedule_assignments sa
+                INNER JOIN guides g ON sa.resource_id = g.id
+                WHERE sa.schedule_id = :schedule_id
+                  AND sa.assignment_type = 'guide'
+                  AND sa.status IN ('confirmed', 'pending')
+                ORDER BY g.full_name ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['schedule_id' => $scheduleId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Đếm số booking theo guide cho 1 lịch
+     */
+    public function countBookingsByGuide($scheduleId, $guideId)
+    {
+        $sql = "SELECT COUNT(*) as count
+                FROM bookings
+                WHERE departure_schedule_id = :schedule_id
+                  AND guide_id = :guide_id
+                  AND status NOT IN ('cancelled')";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'schedule_id' => $scheduleId,
+            'guide_id' => $guideId
+        ]);
+        $result = $stmt->fetch();
+        return $result['count'] ?? 0;
+    }
+
+    /**
      * Lấy số lượng booking cho lịch khởi hành
      */
     public function getBookingCount($scheduleId)
@@ -232,5 +291,101 @@ class DepartureScheduleModel extends BaseModel
         $stmt->execute(['schedule_id' => $scheduleId]);
         $result = $stmt->fetch();
         return $result['count'] ?? 0;
+    }
+    /**
+     * Lấy danh sách booking chưa được xếp lịch của tour
+     */
+    public function getAvailableBookings($tourId)
+    {
+        $sql = "SELECT b.*, u.full_name as customer_name, u.email as customer_email, u.phone as customer_phone
+                FROM bookings b
+                LEFT JOIN users u ON b.user_id = u.id
+                WHERE b.tour_id = :tour_id 
+                  AND b.departure_schedule_id IS NULL 
+                  AND b.status IN ('deposit', 'confirmed')"; // Chỉ lấy booking đã cọc hoặc xác nhận
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['tour_id' => $tourId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Thêm bookings vào lịch khởi hành
+     */
+    public function addBookings($scheduleId, $bookingIds)
+    {
+        if (empty($bookingIds)) {
+            return false;
+        }
+
+        // Lấy thông tin lịch để update current_participants
+        $schedule = $this->findById($scheduleId);
+        if (!$schedule) {
+            return false;
+        }
+
+        // Tạo placeholder cho câu lệnh IN
+        $placeholders = implode(',', array_fill(0, count($bookingIds), '?'));
+
+        $sql = "UPDATE bookings SET departure_schedule_id = ? 
+                WHERE id IN ($placeholders)";
+
+        $params = array_merge([$scheduleId], $bookingIds);
+
+        $stmt = $this->pdo->prepare($sql);
+        $result = $stmt->execute($params);
+
+        if ($result) {
+            // Cập nhật số lượng người tham gia hiện tại
+            $this->updateCurrentParticipants($scheduleId);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Cập nhật số lượng người tham gia hiện tại của lịch
+     */
+    public function updateCurrentParticipants($scheduleId)
+    {
+        // Tính tổng số người từ các booking đã gán
+        $sql = "SELECT COUNT(bd.id) as total_participants
+                FROM bookings b
+                JOIN booking_details bd ON b.id = bd.booking_id
+                WHERE b.departure_schedule_id = :schedule_id 
+                  AND b.status NOT IN ('cancelled')";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['schedule_id' => $scheduleId]);
+        $result = $stmt->fetch();
+        $total = $result['total_participants'] ?? 0;
+
+        // Update vào bảng departure_schedules
+        $updateSql = "UPDATE {$this->table} SET current_participants = :total WHERE id = :id";
+        $updateStmt = $this->pdo->prepare($updateSql);
+        return $updateStmt->execute([
+            'total' => $total,
+            'id' => $scheduleId
+        ]);
+    }
+
+    /**
+     * Lấy danh sách lịch trình theo Guide ID
+     */
+    public function getSchedulesByGuideId($guideId)
+    {
+        $sql = "SELECT ds.*, t.name as tour_name, t.code as tour_code, t.destination, sa.status as assignment_status
+                FROM {$this->table} ds
+                INNER JOIN schedule_assignments sa ON ds.id = sa.schedule_id
+                INNER JOIN tours t ON ds.tour_id = t.id
+                WHERE sa.resource_id = :guide_id
+                  AND sa.assignment_type = 'guide'
+                  AND sa.status IN ('confirmed', 'pending')
+                  AND ds.status NOT IN ('cancelled')
+                ORDER BY ds.departure_date ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['guide_id' => $guideId]);
+        return $stmt->fetchAll();
     }
 }

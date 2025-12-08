@@ -19,14 +19,14 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="name" class="form-label">Tên Tour <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="name" name="name" 
-                               value="<?= $_SESSION['old_data']['name'] ?? '' ?>" required>
+                        <input type="text" class="form-control" id="name" name="name"
+                            value="<?= $_SESSION['old_data']['name'] ?? '' ?>" required>
                         <?php unset($_SESSION['old_data']['name']); ?>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="code" class="form-label">Mã Tour <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="code" name="code" 
-                               value="<?= $_SESSION['old_data']['code'] ?? '' ?>" required>
+                        <input type="text" class="form-control" id="code" name="code"
+                            value="<?= $_SESSION['old_data']['code'] ?? '' ?>" required>
                         <?php unset($_SESSION['old_data']['code']); ?>
                     </div>
                 </div>
@@ -37,8 +37,7 @@
                         <select class="form-select" id="category" name="category" required>
                             <option value="">-- Chọn loại tour --</option>
                             <?php foreach ($categories as $key => $label): ?>
-                                <option value="<?= $key ?>" 
-                                    <?= (isset($_SESSION['old_data']['category']) && $_SESSION['old_data']['category'] === $key) ? 'selected' : '' ?>>
+                                <option value="<?= $key ?>" <?= (isset($_SESSION['old_data']['category']) && $_SESSION['old_data']['category'] === $key) ? 'selected' : '' ?>>
                                     <?= $label ?>
                                 </option>
                             <?php endforeach; ?>
@@ -47,57 +46,70 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="duration" class="form-label">Số ngày <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="duration" name="duration" 
-                               value="<?= $_SESSION['old_data']['duration'] ?? '' ?>" min="1" required>
+                        <input type="number" class="form-control" id="duration" name="duration"
+                            value="<?= $_SESSION['old_data']['duration'] ?? 1 ?>" min="1" required
+                            onchange="updateNights()">
+                        <small class="text-muted">Ví dụ: Tour 3 ngày 2 đêm → nhập 3</small>
                         <?php unset($_SESSION['old_data']['duration']); ?>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="departure_location" class="form-label">Điểm khởi hành <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="departure_location" name="departure_location" 
-                               value="<?= $_SESSION['old_data']['departure_location'] ?? '' ?>" required>
-                        <?php unset($_SESSION['old_data']['departure_location']); ?>
+                        <label for="nights" class="form-label">Số đêm</label>
+                        <input type="number" class="form-control" id="nights" name="nights" value="0" readonly
+                            style="background-color: #e9ecef;">
+                        <small class="text-muted">Tự động tính: Số ngày - 1</small>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="destination" class="form-label">Điểm đến <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="destination" name="destination" 
-                               value="<?= $_SESSION['old_data']['destination'] ?? '' ?>" required>
-                        <?php unset($_SESSION['old_data']['destination']); ?>
+                        <label for="price" class="form-label">Giá Tour (VNĐ) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="price" name="price"
+                            value="<?= $_SESSION['old_data']['price'] ?? '' ?>" min="0" step="1000" required>
+                        <?php unset($_SESSION['old_data']['price']); ?>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="price" class="form-label">Giá Tour (VNĐ) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="price" name="price" 
-                               value="<?= $_SESSION['old_data']['price'] ?? '' ?>" min="0" step="1000" required>
-                        <?php unset($_SESSION['old_data']['price']); ?>
+                        <label for="departure_location" class="form-label">Điểm khởi hành <span
+                                class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="departure_location" name="departure_location"
+                            value="<?= $_SESSION['old_data']['departure_location'] ?? '' ?>" required>
+                        <?php unset($_SESSION['old_data']['departure_location']); ?>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="max_participants" class="form-label">Số lượng tối đa (tùy chọn)</label>
-                        <input type="number" class="form-control" id="max_participants" name="max_participants" 
-                               value="<?= $_SESSION['old_data']['max_participants'] ?? '' ?>" min="1">
-                        <?php unset($_SESSION['old_data']['max_participants']); ?>
+                        <label for="destination" class="form-label">Điểm đến <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="destination" name="destination"
+                            value="<?= $_SESSION['old_data']['destination'] ?? '' ?>" required>
+                        <?php unset($_SESSION['old_data']['destination']); ?>
                     </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="max_participants" class="form-label">Số lượng tối đa (tùy chọn)</label>
+                    <input type="number" class="form-control" id="max_participants" name="max_participants"
+                        value="<?= $_SESSION['old_data']['max_participants'] ?? '' ?>" min="1">
+                    <?php unset($_SESSION['old_data']['max_participants']); ?>
                 </div>
 
                 <div class="mb-3">
                     <label for="description" class="form-label">Mô tả</label>
-                    <textarea class="form-control" id="description" name="description" rows="5"><?= $_SESSION['old_data']['description'] ?? '' ?></textarea>
+                    <textarea class="form-control" id="description" name="description"
+                        rows="5"><?= $_SESSION['old_data']['description'] ?? '' ?></textarea>
                     <?php unset($_SESSION['old_data']['description']); ?>
                 </div>
 
                 <div class="mb-3">
-                    <label for="image" class="form-label">Hình ảnh</label>
-                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                    <label for="images" class="form-label">Hình ảnh gallery</label>
+                    <input type="file" class="form-control" id="images" name="images[]" accept="image/*" multiple>
+                    <small class="text-muted">Chọn nhiều ảnh cùng lúc. Ảnh đầu tiên sẽ là ảnh chính của tour.</small>
+                    <div id="image-preview" class="mt-3 row g-2"></div>
                 </div>
 
                 <div class="mb-3">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="status" name="status" value="1" 
-                               <?= (!isset($_SESSION['old_data']['status']) || $_SESSION['old_data']['status'] == 1) ? 'checked' : '' ?>>
+                        <input class="form-check-input" type="checkbox" id="status" name="status" value="1"
+                            <?= (!isset($_SESSION['old_data']['status']) || $_SESSION['old_data']['status'] == 1) ? 'checked' : '' ?>>
                         <label class="form-check-label" for="status">
                             Kích hoạt tour
                         </label>
@@ -114,3 +126,41 @@
     </div>
 </div>
 
+<script>
+    // Image preview
+    document.getElementById('images')?.addEventListener('change', function (e) {
+        const preview = document.getElementById('image-preview');
+        preview.innerHTML = '';
+
+        const files = Array.from(e.target.files);
+        files.forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-2';
+                    col.innerHTML = `
+                    <div class="position-relative">
+                        <img src="${event.target.result}" class="img-thumbnail" style="height: 120px; width: 100%; object-fit: cover;">
+                        ${index === 0 ? '<span class="badge bg-primary position-absolute top-0 start-0 m-1">Ảnh chính</span>' : ''}
+                    </div>
+                `;
+                    preview.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+
+    // Calculate nights from days
+    function updateNights() {
+        const days = parseInt(document.getElementById('duration').value) || 0;
+        const nights = Math.max(0, days - 1);
+        document.getElementById('nights').value = nights;
+    }
+
+    // Initialize nights value
+    document.addEventListener('DOMContentLoaded', function () {
+        updateNights();
+    });
+</script>

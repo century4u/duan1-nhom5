@@ -20,24 +20,24 @@ class GuideController
     {
         $filters = [
             'specialization' => $_GET['specialization'] ?? '',
-            'status' => isset($_GET['status']) ? (int)$_GET['status'] : null,
+            'status' => isset($_GET['status']) ? (int) $_GET['status'] : null,
             'search' => $_GET['search'] ?? ''
         ];
 
         // Loại bỏ các filter rỗng
-        $filters = array_filter($filters, function($value) {
+        $filters = array_filter($filters, function ($value) {
             return $value !== '' && $value !== null;
         });
 
         $guides = $this->guideModel->getAll($filters);
-        
+
         // Thêm thông tin bổ sung cho mỗi HDV
         foreach ($guides as &$guide) {
             $guide['tours_count'] = $this->guideModel->countTours($guide['id']);
             $ratingInfo = $this->tourHistoryModel->getAverageRating($guide['id']);
             $guide['average_rating'] = $ratingInfo['avg_rating'] ?? null;
             $guide['total_tours'] = $ratingInfo['total_tours'] ?? 0;
-            
+
             // Parse languages từ JSON
             if (!empty($guide['languages'])) {
                 $guide['languages_array'] = json_decode($guide['languages'], true);
@@ -56,14 +56,18 @@ class GuideController
     /**
      * Hiển thị form tạo HDV mới
      */
+    /**
+     * Hiển thị form tạo HDV mới
+     */
     public function create()
     {
+        requireAdmin();
         $specializations = GuideModel::getSpecializations();
         $languages = GuideModel::getCommonLanguages();
 
         $title = 'Tạo HDV Mới';
         $view = 'guide/create';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -71,6 +75,7 @@ class GuideController
      */
     public function store()
     {
+        requireAdmin();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . BASE_URL . '?action=guides/create');
             exit;
@@ -88,13 +93,13 @@ class GuideController
             'passport' => $_POST['passport'] ?? null,
             'languages' => $_POST['languages'] ?? [],
             'certificates' => $_POST['certificates'] ?? '',
-            'experience_years' => (int)($_POST['experience_years'] ?? 0),
+            'experience_years' => (int) ($_POST['experience_years'] ?? 0),
             'experience_description' => $_POST['experience_description'] ?? '',
             'specialization' => $_POST['specialization'] ?? 'mixed',
-            'performance_rating' => !empty($_POST['performance_rating']) ? (float)$_POST['performance_rating'] : null,
+            'performance_rating' => !empty($_POST['performance_rating']) ? (float) $_POST['performance_rating'] : null,
             'health_status' => $_POST['health_status'] ?? 'good',
             'health_notes' => $_POST['health_notes'] ?? '',
-            'status' => isset($_POST['status']) ? (int)$_POST['status'] : 1
+            'status' => isset($_POST['status']) ? (int) $_POST['status'] : 1
         ];
 
         // Validate
@@ -179,7 +184,7 @@ class GuideController
 
         $title = 'Chi tiết HDV - ' . $guide['full_name'];
         $view = 'guide/show';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -187,6 +192,7 @@ class GuideController
      */
     public function edit()
     {
+        requireAdmin();
         $id = $_GET['id'] ?? 0;
         $guide = $this->guideModel->findById($id);
 
@@ -208,7 +214,7 @@ class GuideController
 
         $title = 'Chỉnh sửa HDV';
         $view = 'guide/edit';
-        require_once PATH_VIEW_ADMIN.'main.php';
+        require_once PATH_VIEW_ADMIN . 'main.php';
     }
 
     /**
@@ -216,6 +222,7 @@ class GuideController
      */
     public function update()
     {
+        requireAdmin();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . BASE_URL . '?action=guides');
             exit;
@@ -242,13 +249,13 @@ class GuideController
             'passport' => $_POST['passport'] ?? null,
             'languages' => $_POST['languages'] ?? [],
             'certificates' => $_POST['certificates'] ?? '',
-            'experience_years' => (int)($_POST['experience_years'] ?? 0),
+            'experience_years' => (int) ($_POST['experience_years'] ?? 0),
             'experience_description' => $_POST['experience_description'] ?? '',
             'specialization' => $_POST['specialization'] ?? 'mixed',
-            'performance_rating' => !empty($_POST['performance_rating']) ? (float)$_POST['performance_rating'] : null,
+            'performance_rating' => !empty($_POST['performance_rating']) ? (float) $_POST['performance_rating'] : null,
             'health_status' => $_POST['health_status'] ?? 'good',
             'health_notes' => $_POST['health_notes'] ?? '',
-            'status' => isset($_POST['status']) ? (int)$_POST['status'] : 1,
+            'status' => isset($_POST['status']) ? (int) $_POST['status'] : 1,
             'avatar' => $guide['avatar'] // Giữ nguyên ảnh cũ nếu không upload mới
         ];
 
@@ -297,10 +304,51 @@ class GuideController
     }
 
     /**
+     * HDV xem lịch làm việc của mình
+     */
+    public function mySchedules()
+    {
+        requireHvd(); // Chỉ HDV mới được xem
+
+        $guideId = $_SESSION['user_id'] ?? 0;
+        $guide = $this->guideModel->findById($guideId);
+
+        if (!$guide) {
+            $_SESSION['error'] = 'Không tìm thấy thông tin HDV!';
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+
+        // Lấy filter
+        $month = $_GET['month'] ?? date('Y-m');
+        $status = $_GET['status'] ?? '';
+
+        // Lấy lịch được phân công sử dụng model method
+        $assignmentModel = new ScheduleAssignmentModel();
+        $schedules = $assignmentModel->getGuideSchedules($guideId, [
+            'month' => $month,
+            'status' => $status
+        ]);
+
+        // Lấy thông báo chưa đọc
+        $notificationModel = new NotificationModel();
+        $notifications = $notificationModel->getAll([
+            'recipient_type' => 'guide',
+            'recipient_id' => $guideId,
+            'status' => 'pending'
+        ]);
+
+        $title = 'Lịch Làm Việc Của Tôi';
+        $view = 'guide/my-schedules';
+        require_once PATH_VIEW_ADMIN . 'main.php';
+    }
+
+    /**
      * Xóa HDV
      */
     public function delete()
     {
+        requireAdmin();
         $id = $_GET['id'] ?? 0;
         $guide = $this->guideModel->findById($id);
 

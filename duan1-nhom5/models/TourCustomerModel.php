@@ -11,9 +11,9 @@ class TourCustomerModel extends BaseModel
     {
         $sql = "SELECT bd.*, 
                        b.id as booking_id, b.booking_date, b.status as booking_status, b.total_price,
-                       b.deposit_amount, b.user_id,
+                       b.user_id,
                        t.name as tour_name, t.code as tour_code, t.departure_location, t.destination,
-                       u.full_name as customer_name, u.email as customer_email, u.phone as customer_phone,
+                       u.full_name as customer_name, u.email as customer_email,
                        ds.id as departure_schedule_id, ds.departure_date, ds.departure_time, ds.meeting_point
                 FROM {$this->table} bd
                 INNER JOIN bookings b ON bd.booking_id = b.id
@@ -59,9 +59,9 @@ class TourCustomerModel extends BaseModel
     {
         $sql = "SELECT bd.*, 
                        b.id as booking_id, b.booking_date, b.status as booking_status, b.total_price,
-                       b.deposit_amount, b.user_id,
+                       b.user_id,
                        t.name as tour_name, t.code as tour_code, t.departure_location, t.destination,
-                       u.full_name as customer_name, u.email as customer_email, u.phone as customer_phone,
+                       u.full_name as customer_name, u.email as customer_email,
                        ds.id as departure_schedule_id, ds.departure_date, ds.departure_time, ds.meeting_point
                 FROM {$this->table} bd
                 INNER JOIN bookings b ON bd.booking_id = b.id
@@ -150,9 +150,9 @@ class TourCustomerModel extends BaseModel
     {
         $sql = "SELECT bd.*, 
                        b.id as booking_id, b.booking_date, b.status as booking_status, b.total_price,
-                       b.deposit_amount, b.user_id,
+                       b.user_id,
                        t.name as tour_name, t.code as tour_code, t.departure_location, t.destination,
-                       u.full_name as customer_name, u.email as customer_email, u.phone as customer_phone,
+                       u.full_name as customer_name, u.email as customer_email,
                        ds.id as departure_schedule_id, ds.departure_date, ds.departure_time, ds.meeting_point
                 FROM {$this->table} bd
                 INNER JOIN bookings b ON bd.booking_id = b.id
