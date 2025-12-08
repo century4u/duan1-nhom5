@@ -13,7 +13,7 @@
         <div>
             <h2><?= htmlspecialchars($tour['name']) ?></h2>
             <p class="text-muted mb-0">
-                <span class="badge bg-info"><?= $categories[$tour['category']] ?? $tour['category'] ?></span>
+                <span class="badge bg-info"><?= $categories[$tour['tour_category_id'] ?? ''] ?? 'Chưa phân loại' ?></span>
                 <span class="ms-2">Mã tour: <strong><?= htmlspecialchars($tour['code']) ?></strong></span>
             </p>
         </div>

@@ -9,7 +9,7 @@ class TourImageModel extends BaseModel
      */
     public function getByTourId($tourId)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE tour_id = :tour_id ORDER BY is_primary DESC, sort_order ASC";
+        $sql = "SELECT * FROM {$this->table} WHERE tour_id = :tour_id ORDER BY is_primary DESC, id ASC";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['tour_id' => $tourId]);
         return $stmt->fetchAll();
@@ -32,18 +32,15 @@ class TourImageModel extends BaseModel
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (tour_id, image_url, image_path, caption, is_primary, sort_order) 
+                (tour_id, image_url, is_primary) 
                 VALUES 
-                (:tour_id, :image_url, :image_path, :caption, :is_primary, :sort_order)";
+                (:tour_id, :image_url, :is_primary)";
         
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'tour_id' => $data['tour_id'],
             'image_url' => $data['image_url'],
-            'image_path' => $data['image_path'],
-            'caption' => $data['caption'] ?? null,
-            'is_primary' => $data['is_primary'] ?? 0,
-            'sort_order' => $data['sort_order'] ?? 0
+            'is_primary' => $data['is_primary'] ?? 0
         ]);
 
         return $result ? $this->pdo->lastInsertId() : false;
@@ -75,4 +72,3 @@ class TourImageModel extends BaseModel
         return $stmt->execute(['id' => $imageId]);
     }
 }
-

@@ -88,7 +88,7 @@
                                     <td><?= htmlspecialchars($tour['name']) ?></td>
                                     <td>
                                         <span class="badge bg-info">
-                                            <?= $categories[$tour['category']] ?? $tour['category'] ?>
+                                            <?= $categories[$tour['tour_category_id'] ?? ''] ?? 'Chưa phân loại' ?>
                                         </span>
                                     </td>
                                     <td><?= htmlspecialchars($tour['departure_location']) ?></td>

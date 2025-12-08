@@ -93,19 +93,28 @@
                                     </td>
                                     <td><?= htmlspecialchars($schedule['meeting_point']) ?></td>
                                     <td>
-                                        <strong><?= date('d/m/Y', strtotime($schedule['end_date'])) ?></strong><br>
-                                        <small class="text-muted"><?= date('H:i', strtotime($schedule['end_time'])) ?></small>
+                                        <?php if (!empty($schedule['return_date'])): ?>
+                                            <strong><?= date('d/m/Y', strtotime($schedule['return_date'])) ?></strong><br>
+                                            <small class="text-muted">-</small>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?= $schedule['current_participants'] ?>/<?= $schedule['max_participants'] ?? '∞' ?>
+                                        <?= $schedule['booked_slots'] ?? 0 ?>/<?= $schedule['available_slots'] ?? '∞' ?>
                                     </td>
                                     <td>
                                         <?php
                                         $guideCount = 0;
                                         $serviceCount = 0;
-                                        foreach ($schedule['assignments'] as $assignment) {
-                                            if ($assignment['assignment_type'] === 'guide') $guideCount++;
-                                            else $serviceCount++;
+                                        if (!empty($schedule['assignments'])) {
+                                            foreach ($schedule['assignments'] as $assignment) {
+                                                if (isset($assignment['assignment_type']) && $assignment['assignment_type'] === 'guide') {
+                                                    $guideCount++;
+                                                } else {
+                                                    $serviceCount++;
+                                                }
+                                            }
                                         }
                                         ?>
                                         <small>HDV: <?= $guideCount ?><br>DV: <?= $serviceCount ?></small>

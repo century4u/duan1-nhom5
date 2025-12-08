@@ -69,8 +69,8 @@ class UserModel extends BaseModel
             'email' => $data['email'],
             'password' => $data['password'], // Đã được hash trước khi truyền vào
             'full_name' => $data['full_name'],
-            'role' => $data['role'] ?? 'USER',
-            'status' => $data['status'] ?? 1
+            'role' => $data['role'] ?? 'customer',
+            'status' => $data['status'] ?? 'active'
         ]);
 
         return $result ? $this->pdo->lastInsertId() : false;
@@ -119,7 +119,7 @@ class UserModel extends BaseModel
         }
 
         // Kiểm tra trạng thái
-        if ($user['status'] != 1) {
+        if ($user['status'] != 'active') {
             return false;
         }
 

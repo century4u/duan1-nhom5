@@ -84,7 +84,7 @@
                         <tbody>
                             <?php foreach ($guides as $guide): ?>
                                 <tr>
-                                    <td><strong><?= htmlspecialchars($guide['code']) ?></strong></td>
+                                    <td><strong>#<?= htmlspecialchars($guide['id'] ?? '-') ?></strong></td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <?php if (!empty($guide['avatar'])): ?>
@@ -99,7 +99,7 @@
                                             <?php endif; ?>
                                             <div>
                                                 <strong><?= htmlspecialchars($guide['full_name']) ?></strong>
-                                                <?php if ($guide['birthdate']): ?>
+                                                <?php if (!empty($guide['birthdate'])): ?>
                                                     <br><small class="text-muted"><?= date('d/m/Y', strtotime($guide['birthdate'])) ?></small>
                                                 <?php endif; ?>
                                             </div>
@@ -107,7 +107,7 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-info">
-                                            <?= $specializations[$guide['specialization']] ?? $guide['specialization'] ?>
+                                            <?= $specializations[$guide['specialization'] ?? 'mixed'] ?? 'Chưa xác định' ?>
                                         </span>
                                     </td>
                                     <td>

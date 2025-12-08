@@ -75,6 +75,9 @@
       <div class="text-muted">Mã: <?= htmlspecialchars($tour['code'] ?? '-') ?> | Điểm đi: <?= htmlspecialchars($tour['departure_location'] ?? '-') ?> | Điểm đến: <?= htmlspecialchars($tour['destination'] ?? '-') ?></div>
     </div>
     <div class="text-end">
+      <a href="<?= BASE_URL ?>?action=hvd/checkinPage&tour_id=<?= urlencode($id) ?>&guide_id=<?= urlencode($guideId ?? '') ?>" class="btn btn-primary">
+        <i class="bi bi-clipboard-check"></i> Check-in khách
+      </a>
       <a href="<?= BASE_URL ?>?action=hvd/tours&guide_id=<?= urlencode($guideId ?? '') ?>" class="btn btn-link">Quay lại</a>
     </div>
   </div>
@@ -154,9 +157,18 @@
                                 <li>
                                     <?= htmlspecialchars($d['fullname'] ?? '-') ?> 
                                     - <?= htmlspecialchars($d['gender'] ?? '-') ?> 
-                                    - <?= htmlspecialchars($d['birthdate'] ?? '-') ?> 
-                                    | CMND/CCCD: <?= htmlspecialchars($d['id_card'] ?? '-') ?>
-                                    | Passport: <?= htmlspecialchars($d['passport'] ?? '-') ?>
+                                    - <?= htmlspecialchars($d['birthdate'] ?? '-') ?>
+                                    <?php if (!empty($d['id_card']) || !empty($d['passport'])): ?>
+                                        <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <?php if (!empty($d['id_card'])): ?>CMND/CCCD: <?= htmlspecialchars($d['id_card']) ?><?php endif; ?>
+                                        <?php if (!empty($d['passport'])): ?><?= !empty($d['id_card']) ? ' | ' : '' ?>Passport: <?= htmlspecialchars($d['passport']) ?><?php endif; ?>
+                                    <?php endif; ?>
+                                    <?php if (!empty($d['special_requirements'])): ?>
+                                        <br>&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-exclamation-triangle"></i> Yêu cầu đặc biệt: <?= htmlspecialchars($d['special_requirements']) ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </li>
                             <?php endforeach; ?>
                         </ul>

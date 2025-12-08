@@ -32,16 +32,17 @@ class BookingDetailModel extends BaseModel
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (booking_id, fullname, gender, birthdate) 
+                (booking_id, fullname, gender, birthdate, special_requirements) 
                 VALUES 
-                (:booking_id, :fullname, :gender, :birthdate)";
+                (:booking_id, :fullname, :gender, :birthdate, :special_requirements)";
         
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'booking_id' => $data['booking_id'],
             'fullname' => $data['fullname'],
             'gender' => $data['gender'] ?? null,
-            'birthdate' => $data['birthdate'] ?? null
+            'birthdate' => $data['birthdate'] ?? null,
+            'special_requirements' => $data['special_requirements'] ?? null
         ]);
 
         return $result ? $this->pdo->lastInsertId() : false;
@@ -72,7 +73,8 @@ class BookingDetailModel extends BaseModel
         $sql = "UPDATE {$this->table} SET 
                 fullname = :fullname,
                 gender = :gender,
-                birthdate = :birthdate
+                birthdate = :birthdate,
+                special_requirements = :special_requirements
                 WHERE id = :id";
         
         $stmt = $this->pdo->prepare($sql);
@@ -80,7 +82,8 @@ class BookingDetailModel extends BaseModel
             'id' => $id,
             'fullname' => $data['fullname'],
             'gender' => $data['gender'] ?? null,
-            'birthdate' => $data['birthdate'] ?? null
+            'birthdate' => $data['birthdate'] ?? null,
+            'special_requirements' => $data['special_requirements'] ?? null
         ]);
     }
 
@@ -114,5 +117,42 @@ class BookingDetailModel extends BaseModel
         $stmt->execute(['booking_id' => $bookingId]);
         $result = $stmt->fetch();
         return $result['total'] ?? 0;
+    }
+
+    /**
+     * Cập nhật nhanh yêu cầu đặc biệt
+     */
+    public function updateSpecialRequirements($id, $specialRequirements)
+    {
+        $sql = "UPDATE {$this->table} SET special_requirements = :special_requirements WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'special_requirements' => $specialRequirements
+        ]);
+    }
+
+    /**
+     * Lấy danh sách khách có yêu cầu đặc biệt
+     */
+    public function getWithSpecialRequirements($bookingId = null)
+    {
+        $sql = "SELECT bd.*, b.tour_id 
+                FROM {$this->table} bd
+                INNER JOIN bookings b ON bd.booking_id = b.id
+                WHERE bd.special_requirements IS NOT NULL 
+                AND bd.special_requirements != ''";
+        
+        $params = [];
+        if ($bookingId) {
+            $sql .= " AND bd.booking_id = :booking_id";
+            $params['booking_id'] = $bookingId;
+        }
+        
+        $sql .= " ORDER BY bd.id";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 }

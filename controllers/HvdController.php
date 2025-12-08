@@ -176,4 +176,107 @@ class HvdController {
 
         require_once PATH_VIEW . 'hdv/tour_show.php';
     }
+
+    /**
+     * Trang check-in chuyên dụng cho HDV
+     */
+    public function checkinPage() {
+        require_once PATH_MODEL . 'TourModel.php';
+        require_once PATH_MODEL . 'BookingModel.php';
+        require_once PATH_MODEL . 'BookingDetailModel.php';
+        require_once PATH_MODEL . 'CheckinModel.php';
+
+        $tourModel = new TourModel();
+        $bookingModel = new BookingModel();
+        $bookingDetailModel = new BookingDetailModel();
+        $checkinModel = new CheckinModel();
+
+        $tourId = $_GET['tour_id'] ?? 0;
+        $guideId = $_GET['guide_id'] ?? ($_SESSION['user_id'] ?? null);
+
+        $tour = $tourModel->findById($tourId);
+        if (!$tour) {
+            $_SESSION['error'] = 'Không tìm thấy tour!';
+            header('Location: ' . BASE_URL . '?action=hvd/tours');
+            exit;
+        }
+
+        // Lấy danh sách khách
+        $bookings = $bookingModel->getAll(['tour_id' => $tourId]);
+        $customers = [];
+        foreach ($bookings as $b) {
+            if (!in_array($b['status'], ['confirmed', 'deposit', 'completed'])) {
+                continue;
+            }
+            $details = $bookingDetailModel->getByBookingId($b['id']);
+            foreach ($details as $d) {
+                // Lấy thông tin check-in
+                $checkin = $checkinModel->getByBookingDetailId($d['id']);
+                $customers[] = [
+                    'detail' => $d,
+                    'booking' => $b,
+                    'checkin' => $checkin
+                ];
+            }
+        }
+
+        // Lấy tổng quan check-in
+        $summary = $checkinModel->getCheckInSummary($tourId);
+
+        require_once PATH_VIEW . 'hdv/checkin.php';
+    }
+
+    /**
+     * Cập nhật yêu cầu đặc biệt
+     */
+    public function updateSpecialRequirement() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            exit;
+        }
+
+        require_once PATH_MODEL . 'BookingDetailModel.php';
+        $model = new BookingDetailModel();
+
+        $id = $_POST['id'] ?? 0;
+        $specialRequirements = $_POST['special_requirements'] ?? '';
+
+        $result = $model->updateSpecialRequirements($id, $specialRequirements);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => $result,
+            'message' => $result ? 'Cập nhật thành công!' : 'Cập nhật thất bại!'
+        ]);
+        exit;
+    }
+
+    /**
+     * Check-in nhanh (AJAX)
+     */
+    public function quickCheckin() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            exit;
+        }
+
+        require_once PATH_MODEL . 'CheckinModel.php';
+        $model = new CheckinModel();
+
+        $bookingDetailId = $_POST['booking_detail_id'] ?? 0;
+        $status = $_POST['status'] ?? 'checked_in';
+        $checkedBy = $_SESSION['user_id'] ?? null;
+        $notes = $_POST['notes'] ?? null;
+
+        $result = $model->quickCheckin($bookingDetailId, $status, $checkedBy, $notes);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => $result !== false,
+            'message' => $result !== false ? 'Check-in thành công!' : 'Check-in thất bại!'
+        ]);
+        exit;
+    }
 }

@@ -34,19 +34,18 @@ class GuideTourHistoryModel extends BaseModel
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (guide_id, tour_id, start_date, end_date, participants_count, rating, feedback, notes) 
+                (guide_id, tour_id, departure_schedule_id, start_date, end_date, status, notes) 
                 VALUES 
-                (:guide_id, :tour_id, :start_date, :end_date, :participants_count, :rating, :feedback, :notes)";
+                (:guide_id, :tour_id, :departure_schedule_id, :start_date, :end_date, :status, :notes)";
         
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'guide_id' => $data['guide_id'],
             'tour_id' => $data['tour_id'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date'],
-            'participants_count' => $data['participants_count'] ?? 0,
-            'rating' => $data['rating'] ?? null,
-            'feedback' => $data['feedback'] ?? null,
+            'departure_schedule_id' => $data['departure_schedule_id'] ?? null,
+            'start_date' => $data['start_date'] ?? null,
+            'end_date' => $data['end_date'] ?? null,
+            'status' => $data['status'] ?? 'assigned',
             'notes' => $data['notes'] ?? null
         ]);
 
@@ -54,16 +53,17 @@ class GuideTourHistoryModel extends BaseModel
     }
 
     /**
-     * Tính đánh giá trung bình của HDV
+     * Đếm số tour đã dẫn
      */
-    public function getAverageRating($guideId)
+    public function countToursByGuide($guideId)
     {
-        $sql = "SELECT AVG(rating) as avg_rating, COUNT(*) as total_tours
+        $sql = "SELECT COUNT(*) as total_tours
                 FROM {$this->table} 
-                WHERE guide_id = :guide_id AND rating IS NOT NULL";
+                WHERE guide_id = :guide_id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['guide_id' => $guideId]);
-        return $stmt->fetch();
+        $result = $stmt->fetch();
+        return $result['total_tours'] ?? 0;
     }
 }
 

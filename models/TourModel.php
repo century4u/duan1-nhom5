@@ -9,16 +9,15 @@ class TourModel extends BaseModel
      */
     public function getAll($filters = [])
     {
-        $sql = "SELECT t.*, u.full_name as created_by_name 
+        $sql = "SELECT t.* 
                 FROM {$this->table} t 
-                LEFT JOIN users u ON t.created_by = u.id 
                 WHERE 1=1";
 
         $params = [];
 
         // Lọc theo category
         if (!empty($filters['category'])) {
-            $sql .= " AND t.category = :category";
+            $sql .= " AND t.tour_category_id = :category";
             $params['category'] = $filters['category'];
         }
 
@@ -63,9 +62,8 @@ class TourModel extends BaseModel
      */
     public function findById($id)
     {
-        $sql = "SELECT t.*, u.full_name as created_by_name 
+        $sql = "SELECT t.* 
                 FROM {$this->table} t 
-                LEFT JOIN users u ON t.created_by = u.id 
                 WHERE t.id = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -89,26 +87,24 @@ class TourModel extends BaseModel
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (name, code, category, description, duration, price, max_participants, 
-                 departure_location, destination, image, status, created_by) 
+                (name, code, tour_category_id, description, duration, price, max_participants, 
+                 departure_location, destination, status) 
                 VALUES 
-                (:name, :code, :category, :description, :duration, :price, :max_participants, 
-                 :departure_location, :destination, :image, :status, :created_by)";
+                (:name, :code, :tour_category_id, :description, :duration, :price, :max_participants, 
+                 :departure_location, :destination, :status)";
         
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'name' => $data['name'],
             'code' => $data['code'],
-            'category' => $data['category'],
+            'tour_category_id' => $data['tour_category_id'] ?? null,
             'description' => $data['description'] ?? null,
             'duration' => $data['duration'],
             'price' => $data['price'],
             'max_participants' => $data['max_participants'] ?? null,
             'departure_location' => $data['departure_location'],
             'destination' => $data['destination'],
-            'image' => $data['image'] ?? null,
-            'status' => $data['status'] ?? 1,
-            'created_by' => $data['created_by']
+            'status' => $data['status'] ?? 'active'
         ]);
 
         if ($result) {
@@ -125,14 +121,13 @@ class TourModel extends BaseModel
         $sql = "UPDATE {$this->table} SET 
                 name = :name,
                 code = :code,
-                category = :category,
+                tour_category_id = :tour_category_id,
                 description = :description,
                 duration = :duration,
                 price = :price,
                 max_participants = :max_participants,
                 departure_location = :departure_location,
                 destination = :destination,
-                image = :image,
                 status = :status
                 WHERE id = :id";
         
@@ -141,15 +136,14 @@ class TourModel extends BaseModel
             'id' => $id,
             'name' => $data['name'],
             'code' => $data['code'],
-            'category' => $data['category'],
+            'tour_category_id' => $data['tour_category_id'] ?? null,
             'description' => $data['description'] ?? null,
             'duration' => $data['duration'],
             'price' => $data['price'],
             'max_participants' => $data['max_participants'] ?? null,
             'departure_location' => $data['departure_location'],
             'destination' => $data['destination'],
-            'image' => $data['image'] ?? null,
-            'status' => $data['status'] ?? 1
+            'status' => $data['status'] ?? 'active'
         ]);
     }
 
@@ -158,7 +152,7 @@ class TourModel extends BaseModel
      */
     public function delete($id)
     {
-        $sql = "UPDATE {$this->table} SET status = 0 WHERE id = :id";
+        $sql = "UPDATE {$this->table} SET status = 'inactive' WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute(['id' => $id]);
     }
@@ -182,7 +176,7 @@ class TourModel extends BaseModel
         $params = [];
 
         if (!empty($filters['category'])) {
-            $sql .= " AND category = :category";
+            $sql .= " AND tour_category_id = :category";
             $params['category'] = $filters['category'];
         }
 

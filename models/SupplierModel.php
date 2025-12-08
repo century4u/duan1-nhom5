@@ -17,10 +17,6 @@ class SupplierModel extends BaseModel
             $params['type'] = $filters['type'];
         }
 
-        if (isset($filters['status'])) {
-            $sql .= " AND status = :status";
-            $params['status'] = $filters['status'];
-        }
 
         $sql .= " ORDER BY name ASC";
         $stmt = $this->pdo->prepare($sql);
@@ -44,11 +40,11 @@ class SupplierModel extends BaseModel
      */
     public function getByTourId($tourId)
     {
-        $sql = "SELECT s.*, ts.service_type, ts.service_date, ts.notes 
+        $sql = "SELECT s.*, ts.service_type, ts.cost 
                 FROM {$this->table} s
                 INNER JOIN tour_suppliers ts ON s.id = ts.supplier_id
                 WHERE ts.tour_id = :tour_id
-                ORDER BY ts.service_date, s.type";
+                ORDER BY s.type";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['tour_id' => $tourId]);
         return $stmt->fetchAll();
@@ -60,21 +56,18 @@ class SupplierModel extends BaseModel
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (name, type, contact_person, phone, email, address, description, rating, status) 
+                (name, type, contact_person, phone, email, address) 
                 VALUES 
-                (:name, :type, :contact_person, :phone, :email, :address, :description, :rating, :status)";
+                (:name, :type, :contact_person, :phone, :email, :address)";
         
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'name' => $data['name'],
-            'type' => $data['type'],
+            'type' => $data['type'] ?? null,
             'contact_person' => $data['contact_person'] ?? null,
             'phone' => $data['phone'] ?? null,
             'email' => $data['email'] ?? null,
-            'address' => $data['address'] ?? null,
-            'description' => $data['description'] ?? null,
-            'rating' => $data['rating'] ?? null,
-            'status' => $data['status'] ?? 1
+            'address' => $data['address'] ?? null
         ]);
 
         return $result ? $this->pdo->lastInsertId() : false;
@@ -91,24 +84,18 @@ class SupplierModel extends BaseModel
                 contact_person = :contact_person,
                 phone = :phone,
                 email = :email,
-                address = :address,
-                description = :description,
-                rating = :rating,
-                status = :status
+                address = :address
                 WHERE id = :id";
         
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             'id' => $id,
             'name' => $data['name'],
-            'type' => $data['type'],
+            'type' => $data['type'] ?? null,
             'contact_person' => $data['contact_person'] ?? null,
             'phone' => $data['phone'] ?? null,
             'email' => $data['email'] ?? null,
-            'address' => $data['address'] ?? null,
-            'description' => $data['description'] ?? null,
-            'rating' => $data['rating'] ?? null,
-            'status' => $data['status'] ?? 1
+            'address' => $data['address'] ?? null
         ]);
     }
 

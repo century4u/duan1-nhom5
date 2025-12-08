@@ -33,7 +33,7 @@ class CheckinModel extends BaseModel
     public function getByBookingDetailId($bookingDetailId)
     {
         $sql = "SELECT c.*, 
-                       bd.fullname, bd.gender, bd.birthdate,
+                       bd.fullname, bd.gender, bd.birthdate, bd.special_requirements,
                        b.id as booking_id, b.tour_id,
                        u.full_name as checked_by_name
                 FROM {$this->table} c
@@ -55,7 +55,7 @@ class CheckinModel extends BaseModel
     public function getByTourId($tourId, $filters = [])
     {
         $sql = "SELECT c.*, 
-                       bd.id as booking_detail_id, bd.fullname, bd.gender, bd.birthdate,
+                       bd.id as booking_detail_id, bd.fullname, bd.gender, bd.birthdate, bd.special_requirements,
                        b.id as booking_id, b.tour_id, b.status as booking_status,
                        t.name as tour_name, t.code as tour_code,
                        u.full_name as checked_by_name
@@ -91,7 +91,7 @@ class CheckinModel extends BaseModel
     public function getByDepartureScheduleId($scheduleId, $filters = [])
     {
         $sql = "SELECT c.*, 
-                       bd.id as booking_detail_id, bd.fullname, bd.gender, bd.birthdate,
+                       bd.id as booking_detail_id, bd.fullname, bd.gender, bd.birthdate, bd.special_requirements,
                        b.id as booking_id, b.tour_id, b.status as booking_status,
                        t.name as tour_name, t.code as tour_code,
                        u.full_name as checked_by_name
@@ -172,6 +172,84 @@ class CheckinModel extends BaseModel
         $stmt->execute($params);
         $result = $stmt->fetch();
         return ($result['total'] ?? 0) > 0;
+    }
+
+    /**
+     * Check-in nhanh cho một khách (tạo hoặc cập nhật)
+     */
+    public function quickCheckin($bookingDetailId, $status = 'checked_in', $checkedBy = null, $notes = null)
+    {
+        // Kiểm tra xem đã có bản ghi check-in chưa
+        $existing = $this->getByBookingDetailId($bookingDetailId);
+        
+        if ($existing) {
+            // Cập nhật bản ghi hiện có
+            return $this->updateStatus($existing['id'], $status, $notes, $checkedBy);
+        } else {
+            // Tạo bản ghi mới
+            return $this->create([
+                'booking_detail_id' => $bookingDetailId,
+                'status' => $status,
+                'checked_by' => $checkedBy,
+                'notes' => $notes
+            ]);
+        }
+    }
+
+    /**
+     * Lấy tổng quan trạng thái check-in theo tour
+     */
+    public function getCheckInSummary($tourId, $departureScheduleId = null)
+    {
+        $sql = "SELECT 
+                    COUNT(DISTINCT bd.id) as total_customers,
+                    SUM(CASE WHEN c.status = 'checked_in' THEN 1 ELSE 0 END) as checked_in,
+                    SUM(CASE WHEN c.status = 'late' THEN 1 ELSE 0 END) as late,
+                    SUM(CASE WHEN c.status = 'absent' THEN 1 ELSE 0 END) as absent,
+                    SUM(CASE WHEN c.status = 'pending' OR c.status IS NULL THEN 1 ELSE 0 END) as pending
+                FROM booking_details bd
+                INNER JOIN bookings b ON bd.booking_id = b.id
+                LEFT JOIN {$this->table} c ON bd.id = c.booking_detail_id";
+        
+        $params = ['tour_id' => $tourId];
+        $sql .= " WHERE b.tour_id = :tour_id AND b.status IN ('confirmed', 'deposit', 'completed')";
+        
+        if ($departureScheduleId) {
+            $sql .= " AND (c.departure_schedule_id = :departure_schedule_id OR c.departure_schedule_id IS NULL)";
+            $params['departure_schedule_id'] = $departureScheduleId;
+        }
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Lấy danh sách khách chưa check-in
+     */
+    public function getNotCheckedIn($tourId, $departureScheduleId = null)
+    {
+        $sql = "SELECT bd.*, b.id as booking_id, b.tour_id,
+                       c.id as checkin_id, c.status as checkin_status
+                FROM booking_details bd
+                INNER JOIN bookings b ON bd.booking_id = b.id
+                LEFT JOIN {$this->table} c ON bd.id = c.booking_detail_id
+                WHERE b.tour_id = :tour_id 
+                AND b.status IN ('confirmed', 'deposit', 'completed')
+                AND (c.status IS NULL OR c.status NOT IN ('checked_in', 'late'))";
+        
+        $params = ['tour_id' => $tourId];
+        
+        if ($departureScheduleId) {
+            $sql .= " AND (c.departure_schedule_id = :departure_schedule_id OR c.departure_schedule_id IS NULL)";
+            $params['departure_schedule_id'] = $departureScheduleId;
+        }
+        
+        $sql .= " ORDER BY bd.fullname";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 }
 

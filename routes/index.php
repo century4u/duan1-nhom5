@@ -28,7 +28,7 @@ match ($action) {
     'bookings/update'      => (new BookingController)->update(),
     'bookings/delete'      => (new BookingController)->delete(),
     
-    // Guide management routes (HDV)
+    // Guide management routes
     'guides'             => (new GuideController)->index(),
     'guides/create'      => (new GuideController)->create(),
     'guides/store'       => (new GuideController)->store(),
@@ -36,11 +36,16 @@ match ($action) {
     'guides/edit'        => (new GuideController)->edit(),
     'guides/update'      => (new GuideController)->update(),
     'guides/delete'      => (new GuideController)->delete(),
-    // HDV (Hướng dẫn viên) standalone dashboard
-    'hvd'                => (new HvdController)->home(),
-    'hvd/home'           => (new HvdController)->home(),
-    'hvd/tours'          => (new HvdController)->tours(),
-    'hvd/tours/show'     => (new HvdController)->show(),
+    
+    // HDV (Hướng dẫn viên) routes
+    'hvd'                   => (new HvdController)->home(),
+    'hvd/home'              => (new HvdController)->home(),
+    'hvd/tours'             => (new HvdController)->tours(),
+    'hvd/show'              => (new HvdController)->show(),
+    'hvd/tours/show'        => (new HvdController)->show(),
+    'hvd/checkinPage'       => (new HvdController)->checkinPage(),
+    'hvd/updateSpecialRequirement' => (new HvdController)->updateSpecialRequirement(),
+    'hvd/quickCheckin'      => (new HvdController)->quickCheckin(),
     
     // Authentication routes
     'login'              => (new AuthController)->login(),
@@ -93,20 +98,12 @@ match ($action) {
     'operation-reports'          => (new OperationReportController)->index(),
     'operation-reports/show'     => (new OperationReportController)->show(),
     'operation-reports/create'   => (new OperationReportController)->create(),
-    'operation-reports/store'   => (new OperationReportController)->store(),
-    'operation-reports/edit'    => (new OperationReportController)->edit(),
-    'operation-reports/update'  => (new OperationReportController)->update(),
-    'operation-reports/delete'  => (new OperationReportController)->destroy(),
-    'operation-reports/compare' => (new OperationReportController)->compare(),
-    'operation-reports/export'  => (new OperationReportController)->export(),
-    
-    // Authentication routes
-    'login'              => (new AuthController)->login(),
-    'login/process'      => (new AuthController)->processLogin(),
-    'register'           => (new AuthController)->register(),
-    'register/process'   => (new AuthController)->processRegister(),
-    'logout'             => (new AuthController)->logout(),
-    'forgot-password'    => (new AuthController)->forgotPassword(),
+    'operation-reports/store'    => (new OperationReportController)->store(),
+    'operation-reports/edit'     => (new OperationReportController)->edit(),
+    'operation-reports/update'   => (new OperationReportController)->update(),
+    'operation-reports/delete'   => (new OperationReportController)->destroy(),
+    'operation-reports/compare'  => (new OperationReportController)->compare(),
+    'operation-reports/export'   => (new OperationReportController)->export(),
     
     default             => (new HomeController)->index(),
 };

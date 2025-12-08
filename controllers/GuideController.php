@@ -34,9 +34,8 @@ class GuideController
         // Thêm thông tin bổ sung cho mỗi HDV
         foreach ($guides as &$guide) {
             $guide['tours_count'] = $this->guideModel->countTours($guide['id']);
-            $ratingInfo = $this->tourHistoryModel->getAverageRating($guide['id']);
-            $guide['average_rating'] = $ratingInfo['avg_rating'] ?? null;
-            $guide['total_tours'] = $ratingInfo['total_tours'] ?? 0;
+            $guide['total_tours'] = $this->tourHistoryModel->countToursByGuide($guide['id']);
+            $guide['average_rating'] = null; // Không có rating trong database
             
             // Parse languages từ JSON
             if (!empty($guide['languages'])) {
@@ -163,10 +162,10 @@ class GuideController
         $guide['tour_history'] = $tourHistory;
         $guide['tours_count'] = count($tourHistory);
 
-        // Lấy đánh giá trung bình
-        $ratingInfo = $this->tourHistoryModel->getAverageRating($id);
-        $guide['average_rating'] = $ratingInfo['avg_rating'] ?? null;
-        $guide['rated_tours_count'] = $ratingInfo['total_tours'] ?? 0;
+        // Đếm tổng số tour
+        $guide['total_tours'] = $this->tourHistoryModel->countToursByGuide($id);
+        $guide['average_rating'] = null; // Không có rating trong database
+        $guide['rated_tours_count'] = 0;
 
         // Lấy lịch làm việc (30 ngày tới)
         $startDate = date('Y-m-d');

@@ -147,8 +147,8 @@ class AuthController
             'email' => $data['email'],
             'password' => $hashedPassword,
             'full_name' => $data['full_name'],
-            'role' => 'USER',
-            'status' => 1
+            'role' => 'customer',
+            'status' => 'active'
         ];
 
         $userId = $this->userModel->create($userData);
