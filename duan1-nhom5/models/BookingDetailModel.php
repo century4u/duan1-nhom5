@@ -32,9 +32,9 @@ class BookingDetailModel extends BaseModel
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (booking_id, fullname, gender, birthdate, id_card, passport, hobby, special_requirements, medical_conditions, dietary_restrictions) 
+                (booking_id, fullname, gender, birthdate, phone, id_card, passport, hobby, special_requirements, medical_conditions, dietary_restrictions) 
                 VALUES 
-                (:booking_id, :fullname, :gender, :birthdate, :id_card, :passport, :hobby, :special_requirements, :medical_conditions, :dietary_restrictions)";
+                (:booking_id, :fullname, :gender, :birthdate, :phone, :id_card, :passport, :hobby, :special_requirements, :medical_conditions, :dietary_restrictions)";
         
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
@@ -42,8 +42,10 @@ class BookingDetailModel extends BaseModel
             'fullname' => $data['fullname'],
             'gender' => $data['gender'] ?? null,
             'birthdate' => $data['birthdate'] ?? null,
+            'phone' => $data['phone'] ?? null,
             'id_card' => $data['id_card'] ?? null,
             'passport' => $data['passport'] ?? null,
+            'hobby' => $data['hobby'] ?? null,
             'special_requirements' => $data['special_requirements'] ?? null,
             'medical_conditions' => $data['medical_conditions'] ?? null,
             'dietary_restrictions' => $data['dietary_restrictions'] ?? null
