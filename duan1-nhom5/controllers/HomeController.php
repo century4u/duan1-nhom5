@@ -56,6 +56,9 @@ class HomeController
         ];
 
         // $title = 'Dashboard HDV';
+        // Pass $assignedTours to view as expected
+        $assignedTours = $assignments;
+
         $view = 'hdv/home';
         require_once PATH_VIEW . 'main.php';
     }

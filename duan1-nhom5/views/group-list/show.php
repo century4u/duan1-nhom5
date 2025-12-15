@@ -169,7 +169,7 @@
                                         <td class="text-center fw-bold text-muted"><?= $index + 1 ?></td>
                                         <td>
                                             <div class="fw-bold"><?= htmlspecialchars($customer['fullname']) ?></div>
-                                            <?php if ($customer['checkin']['notes']): ?>
+                                            <?php if (!empty($customer['checkin']) && !empty($customer['checkin']['notes'])): ?>
                                                 <small class="text-danger fst-italic"><i
                                                         class="bi bi-chat-text me-1"></i><?= htmlspecialchars($customer['checkin']['notes']) ?></small>
                                             <?php endif; ?>
@@ -203,11 +203,11 @@
                                         </td>
                                         <td class="text-center">
                                             <?php
-                                            $status = $customer['checkin']['status'] ?? 'pending';
+                                            $status = !empty($customer['checkin']) ? ($customer['checkin']['status'] ?? 'pending') : 'pending';
                                             $stInfo = $statusLabels[$status] ?? ['label' => $status, 'class' => 'bg-secondary'];
                                             ?>
                                             <span class="badge <?= $stInfo['class'] ?>"><?= $stInfo['label'] ?></span>
-                                            <?php if (!empty($customer['checkin']['checkin_time'])): ?>
+                                            <?php if (!empty($customer['checkin']) && !empty($customer['checkin']['checkin_time'])): ?>
                                                 <div class="small text-muted mt-1">
                                                     <?= date('H:i', strtotime($customer['checkin']['checkin_time'])) ?>
                                                 </div>

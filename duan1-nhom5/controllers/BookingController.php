@@ -145,6 +145,9 @@ class BookingController
             'departure_schedule_id' => $data['departure_schedule_id'],
             'guide_id' => $data['guide_id'],
             'user_id' => $data['user_id'],
+            'contact_name' => $data['contact_name'],
+            'contact_email' => $data['contact_email'],
+            'contact_phone' => $data['contact_phone'],
             'total_price' => $totalPrice,
             'status' => 'pending'
         ];

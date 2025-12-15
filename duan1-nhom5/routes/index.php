@@ -10,8 +10,8 @@ if (!isLoggedIn() && !in_array($action, $allowed_actions)) {
 }
 
 match ($action) {
-    '/'                 => (new HomeController)->index(),
-    
+    '/' => (new HomeController)->index(),
+
     // Tour management routes
     'tours' => (new TourController)->index(),
     'tours/show' => (new TourController)->show(),
@@ -50,8 +50,8 @@ match ($action) {
     'hvd/tours/show' => (new HvdController)->show(),
     'hvd/customer/edit' => (new HvdController)->customerEdit(),
     'hvd/customer/update' => (new HvdController)->customerUpdate(),
-    
-    
+
+
     // Authentication routes
     'login' => (new AuthController)->login(),
     'login/process' => (new AuthController)->processLogin(),
@@ -75,10 +75,11 @@ match ($action) {
     'departure-schedules/update-assignment-status' => (new DepartureScheduleController)->updateAssignmentStatus(),
 
     // Tour customer management routes (Danh sách khách theo tour)
-    'tour-customers'             => (new TourCustomerController)->index(),
-    'tour-customers/show'        => (new TourCustomerController)->show(),
-    'tour-customers/export'      => (new TourCustomerController)->export(),
-    
+    'tour-customers' => (new TourCustomerController)->index(),
+    'tour-customers/show' => (new TourCustomerController)->show(),
+    'tour-customers/export' => (new TourCustomerController)->export(),
+    'tour-customers/get-schedules' => (new TourCustomerController)->getSchedules(),
+
     // Group list management routes (In danh sách đoàn)
     'group-lists' => (new GroupListController)->index(),
     'group-lists/show' => (new GroupListController)->show(),
@@ -91,14 +92,15 @@ match ($action) {
     'checkins/update' => (new CheckinController)->update(),
 
     // Room assignment management routes (Phân phòng khách sạn)
-    'room-assignments'           => (new RoomAssignmentController)->index(),
-    'room-assignments/show'      => (new RoomAssignmentController)->show(),
-    'room-assignments/create'    => (new RoomAssignmentController)->create(),
-    'room-assignments/store'     => (new RoomAssignmentController)->store(),
-    'room-assignments/edit'      => (new RoomAssignmentController)->edit(),
-    'room-assignments/update'    => (new RoomAssignmentController)->update(),
-    'room-assignments/delete'    => (new RoomAssignmentController)->delete(),
-    
+    'room-assignments' => (new RoomAssignmentController)->index(),
+    'room-assignments/show' => (new RoomAssignmentController)->show(),
+    'room-assignments/create' => (new RoomAssignmentController)->create(),
+    'room-assignments/store' => (new RoomAssignmentController)->store(),
+    'room-assignments/edit' => (new RoomAssignmentController)->edit(),
+    'room-assignments/update' => (new RoomAssignmentController)->update(),
+    'room-assignments/delete' => (new RoomAssignmentController)->delete(),
+    'room-assignments/get-schedules' => (new RoomAssignmentController)->getSchedules(),
+
     // Operation report routes (Báo cáo vận hành tour)
     'operation-reports' => (new OperationReportController)->index(),
     'operation-reports/show' => (new OperationReportController)->show(),
@@ -111,16 +113,8 @@ match ($action) {
     'operation-reports/export' => (new OperationReportController)->export(),
 
     // Statistics routes (Thống kê)
-    'statistics'                 => (new StatisticsController)->index(),
-    
-    // Authentication routes
-    'login'              => (new AuthController)->login(),
-    'login/process'      => (new AuthController)->processLogin(),
-    'register'           => (new AuthController)->register(),
-    'register/process'   => (new AuthController)->processRegister(),
-    'logout'             => (new AuthController)->logout(),
-    'forgot-password'    => (new AuthController)->forgotPassword(),
-    
-    default             => (new HomeController)->index(),
-    
+    'statistics' => (new StatisticsController)->index(),
+
+    default => (new HomeController)->index(),
+
 };

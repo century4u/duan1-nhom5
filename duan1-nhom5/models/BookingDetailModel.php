@@ -35,7 +35,7 @@ class BookingDetailModel extends BaseModel
                 (booking_id, fullname, gender, birthdate, phone, id_card, passport, hobby, special_requirements, medical_conditions, dietary_restrictions) 
                 VALUES 
                 (:booking_id, :fullname, :gender, :birthdate, :phone, :id_card, :passport, :hobby, :special_requirements, :medical_conditions, :dietary_restrictions)";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             'booking_id' => $data['booking_id'],
@@ -69,6 +69,7 @@ class BookingDetailModel extends BaseModel
                 'phone' => $participant['phone'] ?? null,
                 'id_card' => $participant['id_card'] ?? null,
                 'passport' => $participant['passport'] ?? null,
+                'hobby' => $participant['hobby'] ?? null,
                 'special_requirements' => $participant['special_requirements'] ?? null,
                 'medical_conditions' => $participant['medical_conditions'] ?? null,
                 'dietary_restrictions' => $participant['dietary_restrictions'] ?? null
@@ -89,24 +90,28 @@ class BookingDetailModel extends BaseModel
             phone = :phone,
             id_card = :id_card,
             passport = :passport,
+            hobby = :hobby,
             special_requirements = :special_requirements,
+            medical_conditions = :medical_conditions,
             dietary_restrictions = :dietary_restrictions
             WHERE id = :id";
 
         $stmt = $this->pdo->prepare($sql);
 
-    return $stmt->execute([
-        'id' => $id,
-        'fullname' => $data['fullname'],
-        'gender' => $data['gender'] ?? null,
-        'birthdate' => $data['birthdate'] ?? null,
-        'id_card' => $data['id_card'] ?? null,
-        'passport' => $data['passport'] ?? null,
-        'hobby' => $data['hobby'] ?? null,
-        'special_requirements' => $data['special_requirements'] ?? null,
-        'dietary_restrictions' => $data['dietary_restrictions'] ?? null
-    ]);
-}
+        return $stmt->execute([
+            'id' => $id,
+            'fullname' => $data['fullname'],
+            'gender' => $data['gender'] ?? null,
+            'birthdate' => $data['birthdate'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'id_card' => $data['id_card'] ?? null,
+            'passport' => $data['passport'] ?? null,
+            'hobby' => $data['hobby'] ?? null,
+            'special_requirements' => $data['special_requirements'] ?? null,
+            'medical_conditions' => $data['medical_conditions'] ?? null,
+            'dietary_restrictions' => $data['dietary_restrictions'] ?? null
+        ]);
+    }
 
     /**
      * Xóa chi tiết booking
